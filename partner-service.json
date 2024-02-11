@@ -1,0 +1,4059 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "Finfra API reference",
+    "description": "## API Reference\nThe FINFRA API is designed with a RESTful architecture in mind. With an emphasis on resource-oriented pathways, it supports form-encoded requests and provides responses in JSON format, adhering to conventional HTTP protocols, authentication mechanisms, and methods.\nWhile interacting with the FINFRA API, users have the ability to engage in a test environment, which has no impact on actual data and does not connect with banking infrastructures. The nature of the API key used during requests is pivotal, as it determines whether the actions are affecting the live environment or are restricted to test mode.\nBulk operations are not a feature supported by the FINFRA API; actions are performed on an individual object basis within each request.\nPerformance and reliability are paramount, prompting FINFRA to implement regulated rate limits and allocations on the usage of its API endpoints.\nThe FINFRA API is dynamic and evolves with the introduction of new versions and bespoke functionality tailored to each account. Users are encouraged to log in to access documentation that is specifically tailored to their version of the API and to explore the API using their unique test credentials and datasets.\n",
+    "license": {
+      "name": "unlicense",
+      "url": "https://unlicense.org"
+    }
+  },
+  "servers": [
+    {
+      "description": "SwaggerHub API Auto Mocking",
+      "url": "https://virtserver.swaggerhub.com/Finfra/partner_service/1.0.0"
+    },
+    {
+      "description": "Live environment",
+      "url": "https://partner-service-prod-finfra.elp.finfra.io"
+    },
+    {
+      "description": "development environment",
+      "url": "https://partner-service-stg-dev-finfra.elp.finfra.io"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Authentication",
+      "description": "Authentication\nFINFRA API authenticates via API keys accessible within the dashboard. Test keys are prefixed with fr_test_, while live keys use fr_live_.\nFor tighter security, consider restricted keys. <br> Keep your API keys confidential to prevent unauthorized access.\nNever expose them in public repositories or client-side code.\nAll API interactions must be over HTTPS; unauthenticated or HTTP requests will be rejected.\n<!-- Escaped XML-like tag -->\n"
+    },
+    {
+      "name": "Document",
+      "description": "The KYC (Know Your Customer) process necessitates the population of certain documents into our system prior to enabling a partner to create a borrower profile. The following critical steps must be executed in sequence:\n1. Initiate the creation of a Document Object within the system.\n2. Utilize the newly created Document Object to upload the file content accordingly.\nIt is imperative that these steps are followed meticulously to ensure compliance with our KYC requirements.\n"
+    },
+    {
+      "name": "Borrower",
+      "description": "At Finfra, we cater to two distinct categories of borrowers, each represented by the following enumerations:\n- For an individual borrower: `PERSONAL`\n- For a business entity borrower: `BUSINESS`\nPlease ensure that the appropriate enumeration is provided when initiating processes, as each borrower type is subject to a different procedural workflow. Accurate enumeration is critical to ensure compliance with our tailored service protocols.\n"
+    },
+    {
+      "name": "Finfra Loan Services",
+      "description": "-\n"
+    },
+    {
+      "name": "Error Status",
+      "description": "for checking purpose\n"
+    },
+    {
+      "name": "Callback",
+      "description": "This endpoint is used for receiving callbacks related to the status of user creation, user verify, user credit score, laon and bnpl.\n  The `type` path parameter specifies the type of the callback.\n"
+    }
+  ],
+  "paths": {
+    "/api/auth/token": {
+      "post": {
+        "security": [
+          {
+            "BasicAuth": []
+          }
+        ],
+        "tags": [
+          "Authentication"
+        ],
+        "operationId": "generateAccessToken",
+        "summary": "Generate access token",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/clientVersion"
+          },
+          {
+            "$ref": "#/components/parameters/teamName"
+          },
+          {
+            "$ref": "#/components/parameters/serviceName"
+          }
+        ],
+        "x-codeSamples": [
+          {
+            "lang": "curl",
+            "label": "cURL Example",
+            "source": "curl -X POST {server}/api/auth/token -H \"Authorization: Bearer yourAccessToken\"\n"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "An access token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetAccessToken"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "example error 400 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error400Response"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "example error 415 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error415Response"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "example error 500 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error500Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/documents": {
+      "post": {
+        "tags": [
+          "Document"
+        ],
+        "operationId": "createDocument",
+        "summary": "Create document object",
+        "description": "Create document object",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateDocumentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "$ref": "#/components/responses/CreateDocument"
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Document"
+        ],
+        "operationId": "updateDocuments",
+        "summary": "Update multiple documents description and type",
+        "description": "Update multiple documents description and type",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateDocumentsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/UpdateDocuments"
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          }
+        }
+      }
+    },
+    "/api/core/users": {
+      "post": {
+        "security": [],
+        "tags": [
+          "Borrower"
+        ],
+        "operationId": "createPartnerUsers",
+        "summary": "Create partner borrower",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUserRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success create borrower",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "example error 400 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error400Response"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "example error 415 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error415Response"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "example error 500 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error500Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/core/users/{userId}": {
+      "patch": {
+        "security": [],
+        "tags": [
+          "Borrower"
+        ],
+        "operationId": "updateSinglePartnerUsers",
+        "summary": "Update single partner borrower",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/userId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success update borrower",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "example error 400 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error400Response"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "example error 415 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error415Response"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "example error 500 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error500Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/core/users/{userId}/approve": {
+      "post": {
+        "security": [],
+        "tags": [
+          "Borrower"
+        ],
+        "operationId": "approveUser",
+        "summary": "Approve borrower",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/userId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success approving borrower",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "example error 400 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error400Response"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "example error 415 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error415Response"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "example error 500 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error500Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/core/users/{userId}/block": {
+      "post": {
+        "security": [],
+        "tags": [
+          "Borrower"
+        ],
+        "operationId": "blockUser",
+        "summary": "Block borrower",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/userId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success block borrower",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "example error 400 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error400Response"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "example error 415 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error415Response"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "example error 500 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error500Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/core/users/{userId}/rdf/verify-biometric": {
+      "post": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "tags": [
+          "Borrower"
+        ],
+        "operationId": "verifyUserBiometric",
+        "summary": "Verify borrower biometric",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/userId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success verify user biometric",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "example error 400 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error400Response"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "example error 415 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error415Response"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "example error 500 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error500Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/core/users/rdf/status": {
+      "post": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "tags": [
+          "Borrower"
+        ],
+        "summary": "Update borrower RDF status",
+        "operationId": "updateUserRdfStatus",
+        "responses": {
+          "200": {
+            "description": "Success update borrower RDF status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "example error 400 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error400Response"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "example error 415 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error415Response"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "example error 500 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error500Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/core/users/{userId}/rdf/accounts": {
+      "post": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "tags": [
+          "Borrower"
+        ],
+        "summary": "Create borrower RDF account",
+        "operationId": "createUserRdfAccount",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/userId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Process RDF account submission",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "example error 400 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error400Response"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "example error 415 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error415Response"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "example error 500 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error500Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/core/ftm/users/{callbackTitle}/status": {
+      "post": {
+        "summary": "Create Borrower Callback",
+        "tags": [
+          "Callback"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/callbackTitle"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FtmCreateCallback"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FtmCreateCallback"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/core/ftm/users/{endpointKey}/{userId}": {
+      "post": {
+        "summary": "verify and score borrower",
+        "tags": [
+          "Callback"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/userId"
+          },
+          {
+            "$ref": "#/components/parameters/endpointKey"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FtmCreateCallback"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/core/loans/{userId}": {
+      "post": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "tags": [
+          "Finfra Loan Services"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/userId"
+          }
+        ],
+        "operationId": "createLoan",
+        "summary": "Create Single Payment Loans",
+        "description": "Our Single Payment Loan API is ideal for partners looking to offer financing options such as project financing loans or cash loans that require a singular repayment event. This type of loan is borrowed and must be fully repaid in a lump sum by a specific date, generally aligned with the loan’s maturity.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateLoanRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Loan"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "example error 400 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error400Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/core/loans/{userId}/bnpl": {
+      "post": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "tags": [
+          "Finfra Loan Services"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/userId"
+          }
+        ],
+        "operationId": "createBnpl",
+        "summary": "Create Installment Payment Loans",
+        "description": "The Installment Loan API provides partners with the capability to set up loans that are repaid in regular, scheduled installments - weekly, monthly, or biweekly. This is particularly beneficial for implementing Buy Now, Pay Later (BNPL) solutions. Each payment is methodically apportioned to cover both the principal and the interest, effectively managing the loan balance over its term.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateBnplRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Loan"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "example error 400 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error400Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/errors/{error_code}": {
+      "get": {
+        "security": [],
+        "tags": [
+          "Error Status"
+        ],
+        "operationId": "getErrorExample",
+        "summary": "Error example",
+        "parameters": [
+          {
+            "name": "error_code",
+            "in": "path",
+            "description": "Error HTTP code",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "200",
+                "400",
+                "403",
+                "422",
+                "500"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "default response, instruction to use this endpoint",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "example error 400 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error400Response"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "example error 401 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error401Response"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "example error 403 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error403Response"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "example error 404 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error404Response"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "example error 422 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error422Response"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "example error 429 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error429Response"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "example error 500 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error500Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "User": {
+        "type": "object",
+        "required": [
+          "_id",
+          "partnerId",
+          "authorisedSignatory",
+          "status",
+          "swiftCode",
+          "createdAt",
+          "updatedAt"
+        ],
+        "properties": {
+          "_id": {
+            "type": "string",
+            "example": "1234567890abcdef"
+          },
+          "partnerId": {
+            "type": "string",
+            "example": "1234567890abcdef-1234567890abcdef-1234567890abcdef"
+          },
+          "entity": {
+            "$ref": "#/components/schemas/UserEntity"
+          },
+          "authorisedSignatory": {
+            "$ref": "#/components/schemas/UserAuthorisedSignatory"
+          },
+          "swiftCode": {
+            "type": "string",
+            "example": "BMRIIDJA"
+          },
+          "status": {
+            "type": "string",
+            "example": "CREATED",
+            "enum": [
+              "CREATED",
+              "ENGINE_CHECK_PASSED",
+              "APPROVED_BY_PARTNER",
+              "BLOCKED",
+              "INACTIVE"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "example": "2023-09-04T06:19:06.525+0000"
+          },
+          "updatedAt": {
+            "type": "string",
+            "example": "2023-09-04T06:19:06.525+0000"
+          },
+          "rdf": {
+            "$ref": "#/components/schemas/UserRdf"
+          }
+        }
+      },
+      "CreateUserRequest": {
+        "type": "object",
+        "required": [
+          "type",
+          "authorisedSignatory",
+          "swiftCode"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "PERSONAL",
+              "BUSINESS"
+            ]
+          },
+          "entity": {
+            "$ref": "#/components/schemas/UserEntity"
+          },
+          "authorisedSignatory": {
+            "$ref": "#/components/schemas/UserAuthorisedSignatory"
+          },
+          "swiftCode": {
+            "type": "string",
+            "example": "BMRIIDJA"
+          }
+        }
+      },
+      "Loan": {
+        "type": "object",
+        "required": [
+          "id",
+          "partnerId",
+          "user",
+          "product",
+          "amount",
+          "term"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "7097bbbb-1ffa-47aa-8cb4-ad01e9e73762"
+          },
+          "partnerId": {
+            "type": "string",
+            "example": "7097bbbb-1ffa-47aa-8cb4-ad01e9e73762"
+          },
+          "userId": {
+            "type": "string",
+            "example": "7097bbbb-1ffa-47aa-8cb4-ad01e9e73762"
+          },
+          "product": {
+            "$ref": "#/components/schemas/LoanProduct"
+          },
+          "amount": {
+            "type": "number",
+            "example": 12000000
+          },
+          "term": {
+            "type": "number",
+            "example": 120
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "annualInterestRate": {
+                "type": "number"
+              },
+              "disbursementFee": {
+                "type": "number"
+              },
+              "graceTerm": {
+                "type": "number"
+              },
+              "interestFee": {
+                "type": "number"
+              },
+              "riskLevel": {
+                "$ref": "#/components/schemas/LoanRiskLevel"
+              }
+            }
+          }
+        }
+      },
+      "LoanRiskLevel": {
+        "type": "string",
+        "example": "VERY_LOW",
+        "enum": [
+          "VERY_LOW",
+          "LOW",
+          "MEDIUM",
+          "HIGH",
+          "VERY_HIGH",
+          "NOT_AVAILABLE"
+        ]
+      },
+      "LoanProduct": {
+        "type": "string",
+        "example": "finfra_sandbox_wr_IL_weekly",
+        "enum": [
+          "finfra_sandbox_wr_spl",
+          "finfra_sandbox_wr_IL_weekly",
+          "finfra_sandbox_wr_IL_biweekly",
+          "finfra_sandbox_wr_IL_monthly",
+          "finfra_sandbox_ir_spl",
+          "finfra_sandbox_ir_IL_weekly",
+          "finfra_sandbox_ir_IL_biweekly",
+          "finfra_sandbox_ir_IL_monthly",
+          "finfra_sandbox_pf_spl",
+          "finfra_sandbox_pf_IL_weekly",
+          "finfra_sandbox_pf_IL_biweekly",
+          "finfra_sandbox_pf_IL_monthly",
+          "main_finfra_spl_bnpl_loan_creation_no_login",
+          "finfra_sandbox_bnpl_IL_weekly",
+          "finfra_sandbox_bnpl_IL_biweekly",
+          "finfra_sandbox_bnpl_IL_monthly",
+          "finfra_bnpl",
+          "finfra_staging_wr_spl",
+          "finfra_staging_wr_IL_weekly",
+          "finfra_staging_wr_IL_biweekly",
+          "finfra_staging_wr_IL_monthly",
+          "finfra_staging_ir_spl",
+          "finfra_staging_ir_IL_weekly",
+          "finfra_staging_ir_IL_biweekly",
+          "finfra_staging_ir_IL_monthly",
+          "finfra_staging_pf_spl",
+          "finfra_staging_pf_IL_weekly",
+          "finfra_staging_pf_IL_biweekly",
+          "finfra_staging_pf_IL_monthly",
+          "finfra_staging_bnpl_IL_weekly",
+          "finfra_staging_bnpl_IL_biweekly",
+          "finfra_staging_bnpl_IL_monthly"
+        ]
+      },
+      "CreateLoanRequest": {
+        "type": "object",
+        "required": [
+          "product",
+          "requested_amount",
+          "term",
+          "fields"
+        ],
+        "properties": {
+          "endpoint_key": {
+            "$ref": "#/components/schemas/LoanProduct"
+          },
+          "requested_amount": {
+            "type": "number",
+            "example": 1200000
+          },
+          "term": {
+            "type": "number",
+            "example": 120
+          },
+          "fields": {
+            "type": "object",
+            "properties": {
+              "annual_interest_rate": {
+                "type": "number",
+                "nullable": true
+              },
+              "disbursement_fee": {
+                "type": "number",
+                "nullable": true
+              },
+              "grace_term": {
+                "type": "number",
+                "nullable": true
+              },
+              "interest_fee": {
+                "type": "number",
+                "nullable": true
+              },
+              "partner_risk_level": {
+                "$ref": "#/components/schemas/LoanRiskLevel"
+              }
+            }
+          }
+        }
+      },
+      "CreateBnplRequest": {
+        "type": "object",
+        "required": [
+          "amount",
+          "description",
+          "term"
+        ],
+        "properties": {
+          "amount": {
+            "type": "number",
+            "example": 1200000
+          },
+          "description": {
+            "type": "string",
+            "example": "0.3,null,null,LOW"
+          },
+          "term": {
+            "type": "number",
+            "example": 120
+          }
+        }
+      },
+      "GetAccessToken": {
+        "type": "object",
+        "required": [
+          "access_token"
+        ],
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.C5jr84b95N0Shr4reDUym42SLNc0KauYn3b7rBQyY7k"
+          }
+        }
+      },
+      "CreateDocumentRequest": {
+        "type": "object",
+        "required": [
+          "file",
+          "type",
+          "reference_id"
+        ],
+        "properties": {
+          "file": {
+            "type": "string",
+            "format": "binary"
+          },
+          "type": {
+            "type": "string"
+          },
+          "reference_id": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      },
+      "UpdateDocumentPayload": {
+        "type": "object",
+        "anyOf": [
+          {
+            "required": [
+              "id",
+              "type"
+            ]
+          },
+          {
+            "required": [
+              "id",
+              "description"
+            ]
+          },
+          {
+            "required": [
+              "id",
+              "type",
+              "description"
+            ]
+          },
+          {
+            "required": [
+              "id",
+              "description",
+              "submission_id"
+            ]
+          }
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 24,
+            "maxLength": 24
+          },
+          "description": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "nullable": false
+          },
+          "submission_id": {
+            "type": "string"
+          }
+        }
+      },
+      "UpdateDocumentsRequest": {
+        "type": "array",
+        "minItems": 1,
+        "items": {
+          "$ref": "#/components/schemas/UpdateDocumentPayload"
+        }
+      },
+      "Document": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "reference_id": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "presigned_url": {
+            "$ref": "#/components/schemas/PresignedURL"
+          },
+          "content_type": {
+            "type": "string"
+          },
+          "filename": {
+            "type": "string"
+          }
+        }
+      },
+      "PresignedURLItem": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2022-04-05T06:27:29.574Z"
+          }
+        }
+      },
+      "PresignedURL": {
+        "type": "object",
+        "properties": {
+          "get": {
+            "$ref": "#/components/schemas/PresignedURLItem"
+          }
+        }
+      },
+      "UserEntityManagements": {
+        "type": "array",
+        "description": "Full names, position, emails & hp no. of management of company",
+        "items": {
+          "$ref": "#/components/schemas/UserEntityManagementsCommonItem"
+        }
+      },
+      "UserRdf": {
+        "type": "object",
+        "properties": {
+          "monthlyIncomeRange": {
+            "type": "string",
+            "enum": [
+              "LESS_THAN_3_MILLION",
+              "GTE_3_AND_LT_5_MILLION",
+              "GTE_5_AND_LT_10_MILLION",
+              "GTE_10_AND_LT_20_MILLION",
+              "GTE_20_AND_LT_50_MILLION",
+              "GTE_50_AND_LT_100_MILLION",
+              "GTE_100_AND_LT_500_MILLION",
+              "GREATER_THAN_500_MILLION"
+            ]
+          },
+          "bniBranchLocation": {
+            "type": "string",
+            "enum": [
+              "JAKARTA_KOTA",
+              "BANDUNG",
+              "JAMBI",
+              "YOGYAKARTA",
+              "BANDA_ACEH",
+              "MEDAN",
+              "MAKASSAR",
+              "PEKANBARU",
+              "PADANG",
+              "PALEMBANG",
+              "SURAKARTA",
+              "SIBOLGA",
+              "SEMARANG",
+              "SURABAYA",
+              "BANJARMASIN",
+              "KRAMAT",
+              "MANADO",
+              "CIREBON",
+              "TANJUNG_PINANG",
+              "MAGELANG",
+              "MELAWAI_RAYA",
+              "PONTIANAK",
+              "TANJUNG_PRIOK",
+              "BANDAR_LAMPUNG",
+              "TASIKMALAYA",
+              "RENGAT",
+              "PURWOKERTO",
+              "JEMBER",
+              "JL_JEND_SUDIRMAN_BANDUNG",
+              "GUNUNG_SITOLI",
+              "DENPASAR",
+              "SAMPIT",
+              "JATINEGARA",
+              "MATARAM",
+              "GORONTALO",
+              "MEULABOH",
+              "AMBON",
+              "TANJUNG_PERAK",
+              "KUDUS",
+              "CILACAP",
+              "TEMBILAHAN",
+              "SERANG",
+              "KUALA_TUNGKAL",
+              "BALIKPAPAN",
+              "LHOKSEUMAWE",
+              "TANJUNG_BALAI_KARIMUN",
+              "KAWASAN_INDUSTRI_MEDAN",
+              "BUKITTINGGI",
+              "URIP_SUMOHARJO",
+              "PEKALONGAN",
+              "DUMAI",
+              "DUKUH_BAWAH",
+              "BOGOR",
+              "SINGARAJA",
+              "SENAYAN",
+              "TANJUNG_BALAI_ASAHAN",
+              "PEMANGKAT",
+              "SUMBAWA_BESAR",
+              "SELAT_PENJANG",
+              "PARIGI",
+              "MAJALAYA",
+              "HARMONI",
+              "KEDUNGDORO_SURABAYA",
+              "WONOSOBO",
+              "KEBUMEN",
+              "SUKABUMI",
+              "PASAR_MAYESTIK",
+              "JEMBATAN_MERAH",
+              "JL_A_YANI_PADANG",
+              "KENDARI",
+              "TANGERANG",
+              "SITUBONDO",
+              "SUMENEP",
+              "PURBALINGGA",
+              "BANJAR",
+              "JL_A_YANI_BANDUNG",
+              "PADANGSIDEMPUAN",
+              "GAMBIR",
+              "LANGSA",
+              "BANYUWANGI",
+              "PEMATANG_SIANTAR",
+              "MENTENG",
+              "KARAWANG",
+              "TEMANGGUNG",
+              "TERNATE",
+              "PAMEKASAN",
+              "PARE_PARE",
+              "SENGKANG",
+              "GARUT",
+              "CIANJUR",
+              "BIREUN",
+              "KOTAMOBAGU",
+              "JL_IMAM_BONJOL_PADANG",
+              "KETAPANG",
+              "PROBOLINGGO",
+              "JEMBATAN_AMPERA_PALEMBANG",
+              "MUSI_PALEMBANG",
+              "KEDIRI",
+              "JL_SUTOMO_MEDAN",
+              "KOTABUMI",
+              "BOJONEGORO",
+              "INDRAMAYU",
+              "MADIUN",
+              "TEBET",
+              "MALANG",
+              "JOMBANG",
+              "MOJOKERTO",
+              "CILEGON",
+              "RANGKASBITUNG",
+              "KOTABARU_PULAU_LAUT",
+              "PECENONGAN",
+              "KUNINGAN",
+              "LUWUK",
+              "PANGKAL_PINANG",
+              "CIAMIS",
+              "SALATIGA",
+              "PURWOREJO",
+              "BITUNG",
+              "PAYAKUMBUH",
+              "TANJUNG_KARANG",
+              "PATI",
+              "JEPARA",
+              "PASAR_PUSAT_PEKANBARU",
+              "SIGLI",
+              "SINGKAWANG",
+              "BANJARBARU",
+              "BALIGE",
+              "PANJANG",
+              "KUALA_KAPUAS",
+              "BAU_BAU",
+              "TEGAL",
+              "ROA_MALAKA",
+              "SUNGAI_PENUH",
+              "PURWAKARTA",
+              "SUMEDANG",
+              "BEKASI",
+              "SUBANG",
+              "BLITAR",
+              "SAMARINDA",
+              "TEBING_TINGGI_DELI",
+              "TAHUNA",
+              "BIMA",
+              "WONOGIRI",
+              "KABANJAHE",
+              "TOLI_TOLI",
+              "PENGKALANBUN",
+              "PALOPO",
+              "LUBUK_LINGGAU",
+              "PANGERAN_ANTASARI_BJMS",
+              "KLATEN",
+              "CIKAMPEK",
+              "PASURUAN",
+              "POLEWALI",
+              "KANAKA_MANADO",
+              "NUNUKAN",
+              "PALU",
+              "KENGKULU",
+              "GRESIK",
+              "TARAKAN",
+              "SLAMET_RIYADI_SOLO",
+              "UGM_YOGYA",
+              "KUPANG",
+              "SIDOARJO",
+              "PANDANSARI_BALIKPAPAN",
+              "BOOMBARU_PALEMBANG",
+              "M_H_THAMRIN",
+              "TANJUNG_REDEB",
+              "BONDOWOSO",
+              "ITB_BANDUNG",
+              "DAAN_MOGOT",
+              "KUALA_TANJUNG",
+              "TULUNGAGUNG",
+              "RAWAMANGUN",
+              "KARANGAYU",
+              "BATAM",
+              "MATTOANGIN",
+              "FATMAWATI",
+              "CEPU",
+              "UNIBRAW_MALANG",
+              "UPI_BANDUNG",
+              "GRAHA_PANGERAN_SURABAYA",
+              "BARABAI",
+              "UNAIR_SURABAYA",
+              "JAKARTA_PUSAT",
+              "UNDIP_SEMARANG",
+              "LEGIAN",
+              "USU_MEDAN",
+              "JAYAPURA",
+              "JL_PERINTIS_KEMERDEKAAN",
+              "UNPAD_BANDUNG",
+              "CIMAHI",
+              "PONDOK_INDAH_MALL",
+              "UI_DEPOK",
+              "SEBELAS_MARET_SURAKARTA",
+              "TUBAN",
+              "PALANGKARAYA",
+              "SORONG",
+              "BANGKO",
+              "ENDE",
+              "MARGONDA_DEPOK",
+              "PONOROGO",
+              "METRO",
+              "MAUMERE",
+              "LUMAJANG",
+              "KAYU_AGUNG",
+              "PRABUMULIH",
+              "BATURAJA",
+              "POSINDO",
+              "BONTANG",
+              "MANOKWARI",
+              "BIAK",
+              "MERAUKE",
+              "BULUKUMBA",
+              "RENON",
+              "MUARA_BUNGO",
+              "SOLOK",
+              "MUARA_TEWEH",
+              "MAMUJU",
+              "SINTANG",
+              "KELAPA_GADING",
+              "BUMI_SERPONG_DAMAI",
+              "JABABEKA",
+              "W01_MEDAN",
+              "W02_PADANG",
+              "W04_BANDUNG",
+              "W05_SEMARANG",
+              "W06_SURABAYA",
+              "W07_MAKASSAR",
+              "W08_DENPASAR",
+              "W09_BANJARMASIN",
+              "W10_JAKARTA",
+              "W11_MANADO",
+              "W03_PALEMBANG",
+              "W12_JAKARTA_KOTA",
+              "RANTAU_PRAPAT"
+            ]
+          },
+          "openAccountReason": {
+            "type": "string",
+            "enum": [
+              "INVESTMENTS",
+              "SAVINGS",
+              "TRANSACTIONS"
+            ]
+          },
+          "sourceOfFund": {
+            "type": "string",
+            "enum": [
+              "SALARY",
+              "BUSINESS",
+              "INVESTMENT",
+              "GRANTS"
+            ]
+          },
+          "biometricVerification": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              }
+            }
+          },
+          "customer": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string"
+              }
+            }
+          },
+          "account": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "Address": {
+        "type": "object",
+        "properties": {
+          "streetAddress": {
+            "type": "string",
+            "description": "Only field that is required in address"
+          },
+          "rt": {
+            "type": "string",
+            "description": "RT"
+          },
+          "rw": {
+            "type": "string",
+            "description": "RW"
+          },
+          "province": {
+            "type": "string",
+            "description": "Address province"
+          },
+          "city": {
+            "type": "string",
+            "description": "Address city"
+          },
+          "district": {
+            "type": "string",
+            "description": "Address district"
+          },
+          "village": {
+            "type": "string",
+            "description": "Address village"
+          }
+        }
+      },
+      "AddressDati2": {
+        "type": "object",
+        "properties": {
+          "dati2": {
+            "type": "string"
+          }
+        }
+      },
+      "AddressPostalCode": {
+        "type": "object",
+        "properties": {
+          "postal_code": {
+            "type": "string",
+            "description": "Address postal_code",
+            "pattern": "^\\d{5}$"
+          }
+        }
+      },
+      "AddressCountry": {
+        "type": "object",
+        "properties": {
+          "country": {
+            "type": "string",
+            "description": "Address country"
+          }
+        }
+      },
+      "CountryCode": {
+        "type": "string",
+        "enum": [
+          "AF",
+          "AX",
+          "AL",
+          "DZ",
+          "AS",
+          "AD",
+          "AO",
+          "AI",
+          "AQ",
+          "AG",
+          "AR",
+          "AM",
+          "AW",
+          "AU",
+          "AT",
+          "AZ",
+          "BS",
+          "BH",
+          "BD",
+          "BB",
+          "BY",
+          "BE",
+          "BZ",
+          "BJ",
+          "BM",
+          "BT",
+          "BO",
+          "BA",
+          "BW",
+          "BV",
+          "BR",
+          "IO",
+          "BN",
+          "BG",
+          "BF",
+          "BI",
+          "KH",
+          "CM",
+          "CA",
+          "CV",
+          "KY",
+          "CF",
+          "TD",
+          "CL",
+          "CN",
+          "CX",
+          "CC",
+          "CO",
+          "KM",
+          "CG",
+          "CD",
+          "CK",
+          "CR",
+          "CI",
+          "HR",
+          "CU",
+          "CW",
+          "CY",
+          "CZ",
+          "DK",
+          "DJ",
+          "DM",
+          "DO",
+          "EC",
+          "EG",
+          "SV",
+          "GQ",
+          "ER",
+          "EE",
+          "ET",
+          "FK",
+          "FO",
+          "FJ",
+          "FI",
+          "FR",
+          "GF",
+          "PF",
+          "TF",
+          "GA",
+          "GM",
+          "GE",
+          "DE",
+          "GH",
+          "GI",
+          "GR",
+          "GL",
+          "GD",
+          "GP",
+          "GU",
+          "GT",
+          "GG",
+          "GN",
+          "GW",
+          "GY",
+          "HT",
+          "HM",
+          "VA",
+          "HN",
+          "HK",
+          "HU",
+          "IS",
+          "IN",
+          "ID",
+          "IR",
+          "IQ",
+          "IE",
+          "IM",
+          "IL",
+          "IT",
+          "JM",
+          "JP",
+          "JE",
+          "JO",
+          "KZ",
+          "KE",
+          "KI",
+          "KR",
+          "KP",
+          "KW",
+          "KG",
+          "LA",
+          "LV",
+          "LB",
+          "LS",
+          "LR",
+          "LY",
+          "LI",
+          "LT",
+          "LU",
+          "MO",
+          "MG",
+          "MW",
+          "MY",
+          "MV",
+          "ML",
+          "MT",
+          "MH",
+          "MQ",
+          "MR",
+          "MU",
+          "YT",
+          "MX",
+          "FM",
+          "MD",
+          "MC",
+          "MN",
+          "ME",
+          "MS",
+          "MA",
+          "MZ",
+          "MM",
+          "NA",
+          "NR",
+          "NP",
+          "NL",
+          "NC",
+          "NZ",
+          "NI",
+          "NE",
+          "NG",
+          "NU",
+          "NF",
+          "MP",
+          "NO",
+          "OM",
+          "PK",
+          "PW",
+          "PS",
+          "PA",
+          "PG",
+          "PY",
+          "PE",
+          "PH",
+          "PN",
+          "PL",
+          "PT",
+          "PR",
+          "QA",
+          "RE",
+          "MKD",
+          "RO",
+          "RU",
+          "RW",
+          "BL",
+          "SH",
+          "KN",
+          "LC",
+          "MF",
+          "PM",
+          "VC",
+          "WS",
+          "SM",
+          "ST",
+          "SA",
+          "SN",
+          "RS",
+          "SC",
+          "SL",
+          "SG",
+          "SK",
+          "SI",
+          "SB",
+          "SO",
+          "ZA",
+          "GS",
+          "ES",
+          "LK",
+          "SD",
+          "SS",
+          "SR",
+          "SJ",
+          "SZ",
+          "SE",
+          "CH",
+          "SX",
+          "SY",
+          "TW",
+          "TJ",
+          "TZ",
+          "TH",
+          "TL",
+          "TG",
+          "TK",
+          "TO",
+          "TT",
+          "TN",
+          "TR",
+          "TM",
+          "TC",
+          "TV",
+          "UG",
+          "UA",
+          "AE",
+          "GB",
+          "US",
+          "UM",
+          "UY",
+          "UZ",
+          "VU",
+          "VE",
+          "VN",
+          "VG",
+          "VI",
+          "WF",
+          "EH",
+          "YE",
+          "ZM",
+          "ZW"
+        ]
+      },
+      "UserEntityManagementsCommonItem": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Full name of the management representative according to KTP"
+          },
+          "position": {
+            "type": "string",
+            "description": "Position of the management representative"
+          },
+          "emailAddress": {
+            "type": "string",
+            "format": "email",
+            "description": "Email address of the management representative"
+          },
+          "mobileNumber": {
+            "type": "string",
+            "description": "Phone number of the management representative in E.164 format",
+            "pattern": "^\\+62\\d{1,14}$"
+          },
+          "address": {
+            "type": "string"
+          },
+          "gender": {
+            "type": "string",
+            "example": "MALE"
+          },
+          "identityNumber": {
+            "type": "string"
+          }
+        }
+      },
+      "UserBusinessTypeCommonEnum": {
+        "type": "string",
+        "enum": [
+          "OTHER",
+          "AGRICULTURE_HUNTING_FARMING_FACILITIES",
+          "FOOD_CROPS_RICE",
+          "FOOD_CROPS_PALAWIJA_NUTS",
+          "FOOD_CROPS_PALAWIJA_TUBERS",
+          "FOOD_CROPS_PALAWIJA_CORN",
+          "FOOD_CROPS_PALAWIJA_OTHER",
+          "FOOD_CROPS_HORTICULTURE",
+          "RUBBER_PLANTATION",
+          "COCONUT_PLANTATION",
+          "COFFEE_PLANTATION",
+          "TOBACCO_PLANTATION",
+          "OIL_PALM_PLANTATION",
+          "PEPPER_PLANTATION",
+          "TEA_PLANTATION",
+          "SUGARCANE_PLANTATION",
+          "COTTON_PLANTATION",
+          "CLOVE_PLANTATION",
+          "VANILLA_PLANTATION",
+          "PALA_PLANTATION",
+          "COCOA_CHOCOLATE_PLANTATION",
+          "OTHER_PLANTATIONS",
+          "MARINE_FISHING_SHRIMP",
+          "MARINE_FISHERIES_OTHERS",
+          "INLAND_FISHING_SHRIMP",
+          "INLAND_FISHING_OTHERS",
+          "BRACKISH_FISHERY_SHRIMP",
+          "BRACKISH_FISHERY_OTHERS",
+          "POULTRY_FARM",
+          "CATTLE_FARM",
+          "OTHER_FARMS",
+          "FORESTRY_AND_TIMBER_CUTTING_LOGGING",
+          "HUNT",
+          "AGRICULTURAL_FACILITIES_PUMPING",
+          "AGRICULTURAL_FACILITIES_SOIL_CULTIVATION_EQUIPMENT",
+          "AGRICULTURAL_FACILITIES_WAREHOUSE_CLOTHES_FLOOR",
+          "AGRICULTURAL_FACILITIES_RICE_FIELD_PRINTING",
+          "FISHING_FACILITIES",
+          "FARM_FACILITIES",
+          "FORESTRY_FACILITIES",
+          "OTHER_FACILITIES",
+          "MINING",
+          "OIL_AND_GAS_MINING",
+          "MINING_METAL_ORE_TIN",
+          "MINING_METAL_ORES_NICKEL",
+          "MINING_ORE_BAUXITE",
+          "MINING_ORE_COPPER",
+          "METAL_ORE_MINING_OTHERS",
+          "COAL_MINING",
+          "MINING_OTHER_MINING_GOODS",
+          "INDUSTRY",
+          "INDUSTRY_FLOUR",
+          "INDUSTRY_SUGAR",
+          "RICE_MILL_HULLER",
+          "INDUSTRY_CRUDE_PALM_OIL",
+          "INDUSTRY_PALM_SEED_OIL",
+          "INDUSTRY_OTHER_PLANT_OILS",
+          "INDUSTRY_SALT",
+          "INDUSTRY_BEVERAGES",
+          "INDUSTRY_TOBACCO",
+          "INDUSTRY_CIGARETTES",
+          "INDUSTRY_OTHER_FOOD",
+          "INDUSTRY_ANIMAL_FEED_AND_FISH",
+          "TEXTILE_INDUSTRY",
+          "INDUSTRY_CLOTHING",
+          "INDUSTRY_LEATHER",
+          "INDUSTRY_WOOD_MATERIAL",
+          "INDUSTRY_WOODEN_FURNITURE",
+          "INDUSTRY_OTHER_WOOD",
+          "INDUSTRY_PAPER_AND_PAPER_PRODUCTS",
+          "INDUSTRY_PRINTING_AND_PUBLISHING",
+          "INDUSTRY_PAPER_MATERIALS_PULP",
+          "INDUSTRY_FERTILIZER_PEST_MEDICINE",
+          "PHARMACEUTICAL_INDUSTRY",
+          "INDUSTRY_PLASTIC",
+          "INDUSTRY_OTHER_CHEMICAL_PRODUCTS",
+          "REMILLING_AND_SMOKEHOUSE",
+          "INDUSTRY_CRUMB_RUBBER",
+          "INDUSTRY_OTHER_RUBBER_PRODUCTS",
+          "INDUSTRY_ESSENTIAL_OILS",
+          "INDUSTRY_CHEMICALS_OIL_PRODUCTS_COAL_OTHER",
+          "NON_METAL_MINING_PRODUCTS_PROCESSING_INDUSTRY_OTHER_THAN_PETROLEUM_AND_COAL_PRODUCTS_CEMENT",
+          "PROCESSING_INDUSTRY_OF_NON_METAL_MINING_PRODUCTS_OTHER_THAN_PETROLEUM_AND_COAL_PRODUCTS_BRICKS_TILE",
+          "NON_METAL_MINING_PRODUCTS_PROCESSING_INDUSTRY_OTHER_THAN_PETROLEUM_AND_COAL_PRODUCTS_CERAMICS",
+          "NON_METAL_MINING_PRODUCTS_PROCESSING_INDUSTRY_OTHER_THAN_PETROLEUM_AND_COAL_PRODUCTS_OTHERS",
+          "BASIC_METAL_INDUSTRY_STEEL",
+          "BASE_METAL_INDUSTRY_OTHERS",
+          "OVERSEAS_MARITIME_COMPONENT_ASSEMBLY",
+          "OVERSEAS_COMPONENT_ASSEMBLY_AUTOMOTIVE",
+          "OVERSEAS_COMPONENT_ASSEMBLY_ELECTRONICS",
+          "OVERSEAS_COMPONENT_ASSEMBLY_AGRICULTURAL_TOOLS",
+          "OTHER_OVERSEAS_COMPONENT_ASSEMBLY",
+          "DOMESTIC_COMPONENT_ASSEMBLY_MARITIME",
+          "DOMESTIC_COMPONENT_ASSEMBLY_AUTOMOTIVE",
+          "DOMESTIC_COMPONENT_ASSEMBLY_ELECTRONICS",
+          "DOMESTIC_COMPONENT_ASSEMBLY_AGRICULTURAL_TOOLS",
+          "OTHER_DOMESTIC_COMPONENT_ASSEMBLY",
+          "COMPONENT_MANUFACTURING_MARITIME",
+          "COMPONENT_MANUFACTURING_AUTOMOTIVE",
+          "COMPONENT_MANUFACTURING_ELECTRONICS",
+          "COMPONENT_MANUFACTURING_AGRICULTURAL_TOOLS",
+          "OTHER_COMPONENT_MANUFACTURING",
+          "INDUSTRY_OTHERS",
+          "ELECTRICITY_GAS_AND_WATER",
+          "RURAL_ELECTRIC",
+          "OTHER_ELECTRICS",
+          "GAS",
+          "WATER",
+          "CONSTRUCTION",
+          "CONSTRUCTION_BTN_SIMPLE_HOUSING",
+          "CONSTRUCTION_PERUMNAS_SIMPLE_HOUSING",
+          "CONSTRUCTION_ANOTHER_SIMPLE_HOUSING",
+          "CONSTRUCTION_INPRES_MARKET",
+          "CONSTRUCTION_TRANSMIGRATION_SETTLEMENT_LAND_PREPARATION",
+          "CONSTRUCTION_RICE_FIELD_PRINTING",
+          "CONSTRUCTION_HIGHWAYS_AND_BRIDGES",
+          "CONSTRUCTION_PORT",
+          "CONSTRUCTION_IRRIGATION",
+          "CONSTRUCTION_RURAL_ELECTRIC",
+          "CONSTRUCTION_OTHER_ELECTRICAL",
+          "CONSTRUCTION_PROJECTS_FINANCED_WITH_LOANS_FROM_FOR_OVERSEAS_PAYMENTS",
+          "CONSTRUCTION_OTHER",
+          "TRADE_RESTAURANT_AND_HOTEL",
+          "PALM_OIL_SEED_RAW_MATERIAL_EXPORT",
+          "EXPORT_OF_WOOD_RAW_MATERIALS",
+          "RATTAN_RAW_MATERIAL_EXPORT",
+          "EXPORT_OF_FOREST_RAW_MATERIALS_OTHER_THAN_WOOD_AND_RATTAN",
+          "EXPORT_OF_RAW_MATERIALS_FOR_FOOD_CROPS_PLANTATION",
+          "EXPORT_OF_LIVE_ANIMAL_RAW_MATERIALS_THEIR_PRODUCTS",
+          "EXPORT_OF_TIN_ORE_RAW_MATERIALS",
+          "EXPORT_OF_METAL_ORE_RAW_MATERIALS_OTHER_THAN_TIN",
+          "COAL_RAW_MATERIAL_EXPORT",
+          "OTHER_RAW_MATERIAL_EXPORT",
+          "EXPORT_OF_SAWN_TIMBER_SEMI_FINISHED_GOODS",
+          "EXPORT_OF_SEMI_FINISHED_GOODS_COFFEE_BEANS",
+          "EXPORT_OF_TOBACCO_SEMI_FINISHED_GOODS",
+          "RUBBER_SEMI_FINISHED_GOODS_EXPORT",
+          "EXPORT_OF_PEPPER_SEMI_FINISHED_GOODS",
+          "EXPORT_OF_INTERMEDIATE_GOODS_CRUDE_PALM_OIL",
+          "EXPORT_OF_PALM_OIL_SEMI_FINISHED_GOODS",
+          "EXPORT_OF_COPRA_MEAL_SEMI_FINISHED_GOODS",
+          "EXPORT_OF_SEMI_FINISHED_GOODS_PRODUCED_BY_MR_FOOD_OTHER_PLANTATIONS",
+          "EXPORT_OF_PROCESSED_ANIMAL_SEMI_FINISHED_GOODS",
+          "EXPORT_OF_OTHER_FOOD_SEMI_FINISHED_GOODS",
+          "EXPORT_OF_MINED_SEMI_FINISHED_GOODS",
+          "EXPORT_OF_OTHER_SEMI_FINISHED_GOODS",
+          "EXPORT_OF_FINISHED_PLYWOOD_SIMILAR_GOODS",
+          "EXPORT_OF_FINISHED_TEA",
+          "EXPORT_OF_FINISHED_COFFEE_POWDER",
+          "EXPORT_OF_FINISHED_GOODS_FROM_FOOD_CROPS_OTHER_PLANTATIONS",
+          "SHRIMP_FINISHED_GOODS_EXPORT",
+          "EXPORT_OF_FINISHED_ANIMAL_PRODUCTS_OTHER_THAN_SHRIMP",
+          "EXPORT_OF_FINISHED_WOOD_AND_RATTAN_HANDICRAFTS",
+          "EXPORT_OF_FINISHED_HANDICRAFTS_OTHER_THAN_WOOD_AND_RATTAN",
+          "EXPORT_OF_TEXTILE_FINISHED_GOODS",
+          "EXPORT_OF_FINISHED_GOODS_OTHER_THAN_TEXTILES",
+          "OTHER_FINISHED_GOODS_EXPORT",
+          "EXPORT_OF_SERVICES_CONSTRUCTION",
+          "EXPORT_SERVICES_OTHERS",
+          "IMPORT_FOR_FOREIGN_AID_WHEAT_SEED",
+          "IMPORT_FOR_FOREIGN_AID_RICE",
+          "IMPORT_FOR_FOREIGN_AID_KAPAS",
+          "IMPORT_FOR_FOREIGN_AID_YARN",
+          "IMPORT_FOR_FOREIGN_AID_OTHERS",
+          "IMPORTS_NOT_IN_THE_CONTEXT_OF_FOREIGN_AID_FERTILIZER_AND_PEST_MEDICINE",
+          "IMPORTS_NOT_FOR_FOREIGN_AID_BESI_BETON",
+          "IMPORTS_NOT_FOR_FOREIGN_AID_NEWSPAPER",
+          "IMPORTS_NOT_FOR_FOREIGN_AID_CLOVES",
+          "IMPORTS_NOT_FOR_FOREIGN_AID_RICE",
+          "IMPORTS_NOT_FOR_FOREIGN_AID_SUGAR",
+          "IMPORTS_NOT_FOR_FOREIGN_AID_WHEAT_SEEDS",
+          "IMPORTS_NOT_FOR_FOREIGN_AID_CORN",
+          "IMPORTS_NOT_FOR_FOREIGN_AID_SOYBEANS",
+          "IMPORTS_NOT_FOR_FOREIGN_AID_PHARMACY",
+          "IMPORTS_NOT_IN_THE_CONTEXT_OF_FOREIGN_AID_KEND_MOTORIZED_SPARE_PARTS",
+          "IMPORTS_NOT_FOR_FOREIGN_AID_INDUSTRIAL_SPARE_PARTS",
+          "IMPORTS_NOT_FOR_FOREIGN_AID_OTHERS",
+          "PURCHASE_COLLECTION_BRG_TRADE_DLM_NEG_RICE",
+          "PURCHASE_COLLECTION_BRG_TRADE_DLM_NEG_CORN",
+          "PURCHASE_COLLECTION_BRG_TRADE_DLM_NEG_SALT",
+          "PURCHASE_COLLECTION_BRG_TRADE_DLM_NEG_SUGAR_STOCKS",
+          "PURCHASE_COLLECTION_BRG_TRADE_DLM_NEG_WOOD",
+          "PURCHASE_COLLECTION_BRG_TRADE_DLM_NEG_RUBBER",
+          "PURCHASE_COLLECTION_BRG_TRADE_DLM_NEG_PALM_TREE",
+          "PURCHASE_COLLECTION_BRG_TRADE_DLM_NEG_COTTON",
+          "PURCHASE_COLLECTION_BRG_TRADE_DLM_NEG_COPRA",
+          "PURCHASE_COLLECTION_BRG_TRADE_DLM_NEG_CLOVES",
+          "PURCHASE_COLLECTION_BRG_TRADE_DLM_NEG_LADA",
+          "PURCHASE_COLLECTION_BRG_TRADE_DLM_NEG_TOBACCO",
+          "PURCHASE_COLLECTION_BRG_TRADE_DLM_NEG_COFFEE",
+          "PURCHASE_COLLECTION_BRG_TRADE_DLM_NEG_TEH",
+          "PURCHASE_COLLECTION_BRG_TRADE_DLM_NEG_LIVING_ANIMALS_THE_RESULTS",
+          "PURCHASE_COLLECTION_BRG_TRADE_DLM_NEG_OTHER",
+          "CEMENT_DISTRIBUTION",
+          "DISTRIBUTION_OF_FERTILIZERS_PESTICIDES",
+          "DISTRIBUTION_OF_COARSE_COTTON",
+          "CONCRETE_IRON_DISTRIBUTION",
+          "DISTRIBUTION_OF_NEWSPAPER_PAPERS",
+          "RICE_DISTRIBUTION",
+          "SUGAR_DISTRIBUTION",
+          "DISTRIBUTION_OF_WHEAT_FLOUR",
+          "SALT_DISTRIBUTION",
+          "OIL_FUEL_DISTRIBUTION",
+          "OTHER_DISTRIBUTIONS",
+          "RETAIL_TRADE",
+          "RESTAURANT",
+          "HOTEL",
+          "TRANSPORTATION_WAREHOUSING_COMMUNICATIONS",
+          "LAND_PUBLIC_TRANSPORT",
+          "RIVER_PUBLIC_TRANSPORT",
+          "SEA_PUBLIC_TRANSPORT",
+          "PUBLIC_AIR_TRANSPORT",
+          "TRAVEL_BUREAU",
+          "WAREHOUSING",
+          "COMMUNICATION",
+          "BUSINESS_WORLD_SERVICES",
+          "BUSINESS_WORLD_SERVICES_PERUMNAS_SIMPLE_HOUSING",
+          "BUSINESS_WORLD_SERVICES_SIMPLE_HOUSING_OTHER_THAN_PERUMNAS",
+          "BUSINESS_SERVICES_REAL_ESTATE_INPRES_MARKET",
+          "BUSINESS_SERVICES_OTHER_REAL_ESTATE",
+          "BUSINESS_SERVICES_PROFESSIONS_OTHER_THAN_DOCTORS",
+          "BUSINESS_SERVICES_LEASING",
+          "BUSINESS_SERVICES_OTHERS",
+          "SOCIAL_COMMUNITY_SERVICES",
+          "SOCIAL_COMMUNITY_SERVICES_ENTERTAINMENT_AND_CULTURE",
+          "SOCIAL_COMMUNITY_SERVICES_HEALTH_PROFESSION",
+          "SOCIAL_COMMUNITY_SERVICES_HEALTH_CARE_TREATMENT",
+          "SOCIAL_COMMUNITY_SERVICES_EDUCATION_HIGHER_EDUCATION",
+          "SOCIAL_COMMUNITY_SERVICES_OTHER_EDUCATION",
+          "SOCIAL_COMMUNITY_SERVICES_OTHERS",
+          "OTHERS_HOUSING",
+          "OTHERS_VEHICLES",
+          "FOR_MORE_THAN_4_WHEELED_MOTOR_VEHICLES",
+          "FOR_4_WHEELED_MOTOR_VEHICLES",
+          "FOR_2_WHEELED_MOTOR_VEHICLES",
+          "OTHERS_HOUSEHOLD_APPLIANCES",
+          "OTHERS_OTHERS"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Full name of the management representative according to KTP"
+          },
+          "position": {
+            "type": "string",
+            "description": "Position of the management representative"
+          },
+          "emailAddress": {
+            "type": "string",
+            "format": "email",
+            "description": "Email address of the management representative"
+          },
+          "mobileNumber": {
+            "type": "string",
+            "description": "Phone number of the management representative in E.164 format",
+            "pattern": "^\\+62\\d{1,14}$"
+          },
+          "address": {
+            "type": "string"
+          },
+          "gender": {
+            "type": "string",
+            "example": "MALE"
+          },
+          "identityNumber": {
+            "type": "string"
+          }
+        }
+      },
+      "UserIndustryCommonEnum": {
+        "type": "string",
+        "enum": [
+          "PRIVATE_PERSON_NAME",
+          "PRIVATE_PERSON_NUMBERED",
+          "STAFF",
+          "NON_PROFIT_INSTITUTIONS",
+          "PROPERTY_SERVICES",
+          "HEALTH_CARE",
+          "FOOD_AND_TOBACCO",
+          "TOBACCO",
+          "FOOD_MANUFACTURERS",
+          "WINES_AND_SPIRITS",
+          "BREWERIES_and_DISTILLERS",
+          "SPORT",
+          "AGRICULTURE_and_FISHERIES",
+          "MINING_and_QUARRIES",
+          "INDUSTRIAL",
+          "TRADER",
+          "COMMERCIAL_TRADER",
+          "INDUSTRIAL_TRADER",
+          "RETAIL_TRADER",
+          "BUILDING_AND_CONSTRUCTION",
+          "BUILDING_AND_CONSTRUCTION_DESIGN",
+          "BUILDING_MERCHANTS_AND_SUPPLIERS",
+          "ENGINEERING",
+          "EXTRACTIVE_INDUSTRIES",
+          "TEXTILES_AND_APPAREL",
+          "PRINTING_PAPER_AND_PACKAGING",
+          "DISTRIBUTORS",
+          "DIVERSIFIED_INDUSTRIALS",
+          "ENERGY",
+          "ELECTRICITY_DISTRIBUTION",
+          "GAS_DISTRIBUTION",
+          "WATER_DISTRIBUTION",
+          "OIL_EXPLORATION_AND_PRODUCTION",
+          "OIL_INTEGRATED",
+          "SERVICE_INDUSTRIES",
+          "LEISURE_AND_HOTELS",
+          "RETAIL_SERVICES",
+          "MEDIA_INDUSTRIES",
+          "CHEMICALS",
+          "PHARMACEUTICALS",
+          "TRANSPORT",
+          "AIR_TRANSPORT",
+          "RAIL_TRANSPORT",
+          "ROAD_TRANSPORT",
+          "SEA_TRANSPORT",
+          "TELECOMMUNICATIONS",
+          "ELECTRONICS",
+          "ELECTRICAL_EQUIPMENT_MANUFACTURING",
+          "CENTRAL_BANKS",
+          "BANKS",
+          "MERCHANT_BANKS",
+          "PRIVATE_BANKS",
+          "INVESTMENT_BANKS",
+          "DERIVATIVES_TRADER",
+          "BROKERS_AND_FINANCIAL_ADVISORS",
+          "BUILDING_AND_MUTUAL_SOCIETIES",
+          "POSTAL_OFFICE",
+          "OTHER_FINANCIAL",
+          "PENSION_FUNDS",
+          "INSURANCE_COMPANIES",
+          "PROPERTY_INSURANCE",
+          "LIFE_ASSURANCE",
+          "INVESTMENT_FUNDS",
+          "INVESTMENT_TRUSTS",
+          "INVESTMENT_COMPANIES",
+          "COMPUTER_SOFTWARE",
+          "COMPUTER_HARDWARE",
+          "PUBLIC_SECTOR",
+          "PUBLIC_INSTITUTIONS",
+          "INTERNATIONAL_ORGANISATIONS",
+          "CENTRAL_GOVERNMENT",
+          "DERIVATIVES",
+          "MARGIN_TRADING",
+          "OTHER"
+        ]
+      },
+      "UserBankAccount": {
+        "type": "object",
+        "required": [
+          "holderName",
+          "number"
+        ],
+        "properties": {
+          "holderName": {
+            "type": "string",
+            "example": "Some Name"
+          },
+          "number": {
+            "type": "string",
+            "pattern": "^\\d+$",
+            "example": "123123123213"
+          }
+        }
+      },
+      "UserAuthorisedSignatory": {
+        "type": "object",
+        "required": [
+          "firstName",
+          "lastName",
+          "birthDate",
+          "email",
+          "motherMaidenName",
+          "maritalStatus",
+          "gender",
+          "title",
+          "domicile",
+          "religion",
+          "job",
+          "education",
+          "address",
+          "mobileNumber",
+          "bankAccount",
+          "documents"
+        ],
+        "description": "Authorised Signatory",
+        "properties": {
+          "firstName": {
+            "type": "string",
+            "description": "First name of authorised signatory"
+          },
+          "lastName": {
+            "type": "string",
+            "description": "Last name of authorised signatory"
+          },
+          "birthDate": {
+            "type": "string",
+            "example": "1995-11-01",
+            "format": "date"
+          },
+          "birthPlace": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "Email address of authorised signatory"
+          },
+          "motherMaidenNameName": {
+            "type": "string",
+            "description": "Mother maiden name of authorised signatory"
+          },
+          "maritalStatus": {
+            "type": "string",
+            "enum": [
+              "SINGLE",
+              "MARRIED",
+              "WIDOWER",
+              "WIDOW"
+            ]
+          },
+          "gender": {
+            "type": "string",
+            "enum": [
+              "MALE",
+              "FEMALE"
+            ]
+          },
+          "title": {
+            "type": "string",
+            "enum": [
+              "BPK",
+              "IBU",
+              "SDR",
+              "SDRI"
+            ]
+          },
+          "domicile": {
+            "$ref": "#/components/schemas/CountryCode"
+          },
+          "religion": {
+            "type": "string",
+            "enum": [
+              "ISLAM",
+              "CHRISTIAN",
+              "CATHOLIC",
+              "BUDDHIST",
+              "HINDU",
+              "CONFUCIAN",
+              "OTHER"
+            ]
+          },
+          "job": {
+            "type": "string",
+            "enum": [
+              "PRIVATE_SECTOR_EMPLOYEE",
+              "STATE_OWNED_ENTERPRISE_EMPLOYEE",
+              "NATIONAL_MILITARY_OR_POLICE_OFFICER",
+              "BUSINESS_OWNER",
+              "TRADER",
+              "FARMER_OR_FISHERMAN",
+              "STUDENT",
+              "HOUSEWIFE",
+              "UNEMPLOYED",
+              "EMPLOYEE",
+              "ENTREPRENEUR",
+              "STATE_OFFICIAL",
+              "ACCOUNTANT",
+              "LAWYER_OR_NOTARY",
+              "PROFESSION",
+              "RETIREE",
+              "PRIVATE_LECTURER_OR_TEACHER",
+              "PUBLIC_LECTURER_OR_TEACHER",
+              "DOCTOR",
+              "BNI_EMPLOYEE",
+              "BNI_AFFILIATE_UNIT",
+              "GOVERNMENT_EMPLOYEE",
+              "OTHER"
+            ]
+          },
+          "education": {
+            "type": "string",
+            "enum": [
+              "ELEMENTARY_SCHOOL",
+              "JUNIOR_HIGH_SCHOOL",
+              "HIGH_SCHOOL_OR_EQUIVALENT",
+              "ACADEMY_OR_DIPLOMA",
+              "BACHELORS_DEGREE",
+              "MASTERS_DEGREE",
+              "PHD"
+            ]
+          },
+          "address": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Address"
+              },
+              {
+                "$ref": "#/components/schemas/AddressDati2"
+              },
+              {
+                "$ref": "#/components/schemas/AddressPostalCode"
+              },
+              {
+                "$ref": "#/components/schemas/AddressCountry"
+              }
+            ]
+          },
+          "mobileNumber": {
+            "type": "string",
+            "description": "Mobile number of the authorised signatory in E.164 format",
+            "pattern": "^\\+62\\d{1,14}$"
+          },
+          "bankAccount": {
+            "$ref": "#/components/schemas/UserBankAccount"
+          },
+          "documents": {
+            "type": "object",
+            "required": [
+              "ktp",
+              "selfie",
+              "npwp"
+            ],
+            "properties": {
+              "ktp": {
+                "type": "object",
+                "required": [
+                  "number",
+                  "file",
+                  "issuingCity",
+                  "expiryDate"
+                ],
+                "properties": {
+                  "number": {
+                    "type": "string"
+                  },
+                  "file": {
+                    "type": "string"
+                  },
+                  "issuingCity": {
+                    "type": "string"
+                  },
+                  "expiryDate": {
+                    "type": "string",
+                    "example": "2099-11-01",
+                    "format": "date"
+                  }
+                }
+              },
+              "selfie": {
+                "type": "object",
+                "required": [
+                  "file"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string"
+                  }
+                }
+              },
+              "npwp": {
+                "type": "object",
+                "required": [
+                  "number"
+                ],
+                "properties": {
+                  "number": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "UserEntity": {
+        "type": "object",
+        "description": "User entity required if user.type is BUSINESS",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "address": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Address"
+              },
+              {
+                "$ref": "#/components/schemas/AddressPostalCode"
+              }
+            ]
+          },
+          "phoneNumber": {
+            "type": "string",
+            "description": "phone number in E.164 format",
+            "pattern": "^\\+62\\d{1,14}$"
+          },
+          "fax": {
+            "type": "string",
+            "description": "Entity phone number in E.164 format",
+            "pattern": "^\\+62\\d{1,14}$"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "Email address of authorised signatory"
+          },
+          "businessType": {
+            "$ref": "#/components/schemas/UserBusinessTypeCommonEnum"
+          },
+          "industry": {
+            "$ref": "#/components/schemas/UserIndustryCommonEnum"
+          },
+          "nationality": {
+            "$ref": "#/components/schemas/CountryCode"
+          },
+          "residence": {
+            "$ref": "#/components/schemas/CountryCode"
+          },
+          "npwp": {
+            "type": "string"
+          },
+          "phoneExt": {
+            "type": "string"
+          },
+          "managements": {
+            "$ref": "#/components/schemas/UserEntityManagements"
+          }
+        }
+      },
+      "FtmCreateCallback": {
+        "type": "object",
+        "properties": {
+          "customer_id": {
+            "type": "string"
+          },
+          "unique_id": {
+            "type": "string"
+          },
+          "personal_code": {
+            "type": "string"
+          },
+          "customer_vat_code": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "customer_type": {
+            "type": "string"
+          },
+          "AFPI_individual": {
+            "$ref": "#/components/schemas/AFPIIndividual"
+          },
+          "CLIK_individual": {
+            "$ref": "#/components/schemas/CLIKIndividual"
+          },
+          "AFPI_Company": {
+            "$ref": "#/components/schemas/AFPICompany"
+          },
+          "CLIK_Company": {
+            "$ref": "#/components/schemas/CLIKCompany"
+          }
+        }
+      },
+      "DetailsRequirements": {
+        "type": "object",
+        "properties": {
+          "personal_code": {
+            "type": "string"
+          },
+          "customer_vat_code": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "international_phone_string": {
+            "type": "string"
+          },
+          "finfra_address": {
+            "type": "string"
+          },
+          "finfra_city": {
+            "type": "string"
+          },
+          "finfra_district": {
+            "type": "string"
+          },
+          "finfra_subdistrict": {
+            "type": "string"
+          },
+          "finfra_postal_code": {
+            "type": "string"
+          },
+          "reference_number": {
+            "type": "string"
+          },
+          "va_number": {
+            "type": "string"
+          },
+          "va_number_swift_code": {
+            "type": "string"
+          },
+          "disbursement_date": {
+            "type": "string"
+          },
+          "agreement_pdf_url": {
+            "type": "string"
+          }
+        }
+      },
+      "FtmBorrowerScoreCallback": {
+        "type": "object",
+        "properties": {
+          "AFPI_individual": {
+            "$ref": "#/components/schemas/AFPIIndividual"
+          },
+          "CLIK_individual": {
+            "$ref": "#/components/schemas/CLIKIndividual"
+          },
+          "AFPI_company": {
+            "$ref": "#/components/schemas/AFPICompany"
+          },
+          "CLIK_company": {
+            "$ref": "#/components/schemas/CLIKCompany"
+          }
+        }
+      },
+      "AFPICompany": {
+        "type": "object",
+        "properties": {
+          "count_npwp": {
+            "type": "number"
+          },
+          "loans_count": {
+            "type": "number"
+          },
+          "sum_loan_sums": {
+            "type": "number"
+          },
+          "year_from_ktp": {
+            "type": "string"
+          },
+          "good_current_5": {
+            "type": "number"
+          },
+          "count_outstanding": {
+            "type": "number"
+          },
+          "count_written_off": {
+            "type": "number"
+          },
+          "largest_loan_sums": {
+            "type": "number"
+          },
+          "max_dpd_danabijak": {
+            "type": "number",
+            "nullable": true
+          },
+          "last_dpd_danabijak": {
+            "type": "number",
+            "nullable": true
+          },
+          "smallest_loan_sums": {
+            "type": "number"
+          },
+          "count_loans_danabijak": {
+            "type": "number"
+          },
+          "max_dpd_max_danabijak": {
+            "type": "number",
+            "nullable": true
+          },
+          "max_loan_sum_danabijak": {
+            "type": "number",
+            "nullable": true
+          },
+          "sum_loans_past_30_days": {
+            "type": "number"
+          },
+          "sum_loans_past_90_days": {
+            "type": "number"
+          },
+          "last_loan_sum_danabijak": {
+            "type": "number",
+            "nullable": true
+          },
+          "last_reported_date_afpi": {
+            "type": "number"
+          },
+          "count_loans_past_90_days": {
+            "type": "number"
+          },
+          "max_dpd_dpd_max_last_180": {
+            "type": "number",
+            "nullable": true
+          },
+          "current_bad_outstanding_0": {
+            "type": "number"
+          },
+          "dpd_max_bad_outstanding_0": {
+            "type": "number"
+          },
+          "count_loans_before_60_days": {
+            "type": "number"
+          },
+          "current_good_outstanding_0": {
+            "type": "number"
+          },
+          "year_from_ktp_date_of_birth": {
+            "type": "number",
+            "nullable": true
+          },
+          "days_since_last_disbursement": {
+            "type": "number"
+          },
+          "max_dpd_dpd_current_last_180": {
+            "type": "number",
+            "nullable": true
+          },
+          "days_since_first_disbursement": {
+            "type": "number"
+          },
+          "first_fully_paid_reported_date": {
+            "type": "number"
+          },
+          "sum_dpd_max_good_outstanding_0": {
+            "type": "number"
+          },
+          "count_outstanding_loan_providers": {
+            "type": "number"
+          },
+          "sum_loan_sums_30days_outstanding": {
+            "type": "number"
+          },
+          "sum_of_loans_due_date_in_next_30": {
+            "type": "number"
+          },
+          "count_disbursed_10jt_current_dpd_0": {
+            "type": "number"
+          },
+          "avg_loan_sum_lt_dpd_max0dpd_30_days": {
+            "type": "number"
+          },
+          "count_1jt_current_good_fully_paid_0": {
+            "type": "number"
+          },
+          "count_5jt_current_good_outstanding0": {
+            "type": "number"
+          },
+          "count_3jt_current_good_outstanding_0": {
+            "type": "number"
+          },
+          "count_outstanding_loan_providers_bad_0": {
+            "type": "number"
+          },
+          "days_since_first_disbursement_danabijak": {
+            "type": "number",
+            "nullable": true
+          },
+          "avg_disbursements_lt_30dpd_max_60_days_ago": {
+            "type": "number"
+          },
+          "sum_disbursements_gt_30dpd_max_60_days_ago": {
+            "type": "number"
+          },
+          "sum_disbursements_lt_30dpd_max_60_days_ago": {
+            "type": "number"
+          },
+          "days_since_first_current_0_outstanding_date": {
+            "type": "number"
+          },
+          "days_since_last_current_bad0_outstanding_date": {
+            "type": "number",
+            "nullable": true
+          },
+          "days_since_last_outstanding_disbursement_date": {
+            "type": "number"
+          },
+          "days_since_first_current_bad0_outstanding_date": {
+            "type": "number",
+            "nullable": true
+          },
+          "max_principal_disbursed_lt_30dpd_max_60_days_ago": {
+            "type": "number"
+          }
+        }
+      },
+      "CLIKCompanyRawData": {
+        "type": "object",
+        "properties": {
+          "MessageResponseMessageResponse": {
+            "type": "object",
+            "properties": {
+              "Id": {
+                "type": "string"
+              },
+              "GroupId": {
+                "type": "string"
+              },
+              "TimeStamp": {
+                "type": "string"
+              },
+              "ResultCode": {
+                "type": "string"
+              },
+              "Idempotence": {
+                "type": "string"
+              },
+              "ResultLanguage": {
+                "type": "string"
+              },
+              "ResultDescription": {
+                "type": "string"
+              },
+              "CredentialsResponse": {
+                "type": "object",
+                "properties": {
+                  "Id": {
+                    "type": "string"
+                  },
+                  "Domain": {
+                    "type": "string"
+                  },
+                  "Password": {
+                    "type": "string"
+                  },
+                  "ResultCode": {
+                    "type": "string"
+                  },
+                  "ResultLanguage": {
+                    "type": "string"
+                  },
+                  "ResultDescription": {
+                    "type": "string"
+                  }
+                }
+              },
+              "ExpirationTimeStamp": {
+                "type": "string"
+              }
+            }
+          },
+          "ProductResponse": {
+            "type": "object",
+            "properties": {
+              "Id": {
+                "type": "string"
+              },
+              "Version": {
+                "type": "string"
+              },
+              "ServiceId": {
+                "type": "string"
+              },
+              "ResultCode": {
+                "type": "string"
+              },
+              "ResultLanguage": {
+                "type": "string"
+              },
+              "ResultDescription": {
+                "type": "string"
+              },
+              "CB_NAE_ProductOutput": {
+                "type": "object",
+                "properties": {
+                  "MessageId": {
+                    "type": "object",
+                    "properties": {
+                      "CBSMessageId": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "CreditReport": {
+                    "type": "object",
+                    "properties": {
+                      "FootPrints": {
+                        "type": "object",
+                        "properties": {
+                          "Count1Month": {
+                            "type": "string"
+                          },
+                          "Count3Months": {
+                            "type": "string"
+                          },
+                          "Count6Months": {
+                            "type": "string"
+                          },
+                          "Count12Months": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "MatchedSubject": {
+                        "type": "object",
+                        "properties": {
+                          "FlagMatched": {
+                            "type": "string"
+                          },
+                          "CBSubjectCode": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "ContractsHistory": {
+                        "type": "object",
+                        "properties": {
+                          "Bond": {
+                            "type": "object",
+                            "properties": {
+                              "stringsSummary": {
+                                "type": "object",
+                                "properties": {
+                                  "Active": {
+                                    "type": "string"
+                                  },
+                                  "Closed": {
+                                    "type": "string"
+                                  },
+                                  "Refused": {
+                                    "type": "string"
+                                  },
+                                  "Renounced": {
+                                    "type": "string"
+                                  },
+                                  "Requested": {
+                                    "type": "string"
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "Credit": {
+                            "type": "object",
+                            "properties": {
+                              "stringsSummary": {
+                                "type": "object",
+                                "properties": {
+                                  "Active": {
+                                    "type": "string"
+                                  },
+                                  "Closed": {
+                                    "type": "string"
+                                  },
+                                  "Refused": {
+                                    "type": "string"
+                                  },
+                                  "Renounced": {
+                                    "type": "string"
+                                  },
+                                  "Requested": {
+                                    "type": "string"
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "Guarantee": {
+                            "type": "object",
+                            "properties": {
+                              "stringsSummary": {
+                                "type": "object",
+                                "properties": {
+                                  "Active": {
+                                    "type": "string"
+                                  },
+                                  "Closed": {
+                                    "type": "string"
+                                  },
+                                  "Refused": {
+                                    "type": "string"
+                                  },
+                                  "Renounced": {
+                                    "type": "string"
+                                  },
+                                  "Requested": {
+                                    "type": "string"
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "AggregatedData": {
+                            "type": "object",
+                            "properties": {
+                              "Currency": {
+                                "type": "string"
+                              },
+                              "CurrencyDesc": {
+                                "type": "string"
+                              },
+                              "Contractsstring": {
+                                "type": "string"
+                              },
+                              "TotalCreditLimit": {
+                                "type": "string"
+                              },
+                              "TotalDebitBalance": {
+                                "type": "string"
+                              },
+                              "ReportingProvidersstring": {
+                                "type": "string"
+                              }
+                            }
+                          },
+                          "LetterOfCredit": {
+                            "type": "object",
+                            "properties": {
+                              "stringsSummary": {
+                                "type": "object",
+                                "properties": {
+                                  "Active": {
+                                    "type": "string"
+                                  },
+                                  "Closed": {
+                                    "type": "string"
+                                  },
+                                  "Refused": {
+                                    "type": "string"
+                                  },
+                                  "Renounced": {
+                                    "type": "string"
+                                  },
+                                  "Requested": {
+                                    "type": "string"
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "OtherFacilities": {
+                            "type": "object",
+                            "properties": {
+                              "stringsSummary": {
+                                "type": "object",
+                                "properties": {
+                                  "Active": {
+                                    "type": "string"
+                                  },
+                                  "Closed": {
+                                    "type": "string"
+                                  },
+                                  "Refused": {
+                                    "type": "string"
+                                  },
+                                  "Renounced": {
+                                    "type": "string"
+                                  },
+                                  "Requested": {
+                                    "type": "string"
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "EnquiredData": {
+                    "type": "object",
+                    "properties": {
+                      "Link": {
+                        "type": "object",
+                        "properties": {
+                          "Role": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "Subject": {
+                        "type": "object",
+                        "properties": {
+                          "Company": {
+                            "type": "object",
+                            "properties": {
+                              "Address": {
+                                "type": "object",
+                                "properties": {
+                                  "Address": {
+                                    "type": "object",
+                                    "properties": {
+                                      "City": {
+                                        "type": "string"
+                                      },
+                                      "Address": {
+                                        "type": "string"
+                                      },
+                                      "Country": {
+                                        "type": "string"
+                                      },
+                                      "District": {
+                                        "type": "string"
+                                      },
+                                      "PostalCode": {
+                                        "type": "string"
+                                      },
+                                      "SubDistrict": {
+                                        "type": "string"
+                                      }
+                                    }
+                                  },
+                                  "AddressDesc": {
+                                    "type": "object",
+                                    "properties": {
+                                      "CityDesc": {
+                                        "type": "string"
+                                      },
+                                      "CountryDesc": {
+                                        "type": "string"
+                                      }
+                                    }
+                                  }
+                                }
+                              },
+                              "Contact": {
+                                "type": "object",
+                                "properties": {
+                                  "Phonestring": {
+                                    "type": "string"
+                                  },
+                                  "EmailAddress": {
+                                    "type": "string"
+                                  }
+                                }
+                              },
+                              "CompanyName": {
+                                "type": "object",
+                                "properties": {
+                                  "TradeName": {
+                                    "type": "string"
+                                  }
+                                }
+                              },
+                              "CompanyEstablishment": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "BusinessIdentificationCode": {
+                                "type": "object",
+                                "properties": {
+                                  "BusinessIdentitystring": {
+                                    "type": "string"
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "LinkDesc": {
+                        "type": "object",
+                        "properties": {
+                          "RoleDesc": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "Application": {
+                        "type": "object",
+                        "properties": {
+                          "Credit": {
+                            "type": "object",
+                            "properties": {
+                              "ApplicationAmount": {
+                                "type": "string"
+                              }
+                            }
+                          },
+                          "Currency": {
+                            "type": "string"
+                          },
+                          "ContractPhase": {
+                            "type": "string"
+                          },
+                          "ContractTypeCode": {
+                            "type": "string"
+                          },
+                          "ContractRequestDate": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "SubjectRefDate": {
+                        "type": "string"
+                      },
+                      "ApplicationDesc": {
+                        "type": "object",
+                        "properties": {
+                          "CurrencyDesc": {
+                            "type": "string"
+                          },
+                          "ContractTypeDesc": {
+                            "type": "string"
+                          },
+                          "ContractPhaseDesc": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "ApplicationCodes": {
+                    "type": "object",
+                    "properties": {
+                      "CBContractCode": {
+                        "type": "string"
+                      },
+                      "ProviderApplicationNo": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "AFPIIndividual": {
+        "type": "object",
+        "properties": {
+          "count_npwp": {
+            "type": "number",
+            "nullable": true
+          },
+          "loans_count": {
+            "type": "number",
+            "nullable": true
+          },
+          "sum_loan_sums": {
+            "type": "number",
+            "nullable": true
+          },
+          "year_from_ktp": {
+            "type": "string",
+            "nullable": true
+          },
+          "good_current_5": {
+            "type": "number",
+            "nullable": true
+          },
+          "count_outstanding": {
+            "type": "number",
+            "nullable": true
+          },
+          "count_written_off": {
+            "type": "number",
+            "nullable": true
+          },
+          "largest_loan_sums": {
+            "type": "number",
+            "nullable": true
+          },
+          "max_dpd_danabijak": {
+            "type": "number",
+            "nullable": true
+          },
+          "last_dpd_danabijak": {
+            "type": "number",
+            "nullable": true
+          },
+          "smallest_loan_sums": {
+            "type": "number",
+            "nullable": true
+          },
+          "count_loans_danabijak": {
+            "type": "number",
+            "nullable": true
+          },
+          "max_dpd_max_danabijak": {
+            "type": "number",
+            "nullable": true
+          },
+          "max_loan_sum_danabijak": {
+            "type": "number",
+            "nullable": true
+          },
+          "sum_loans_past_30_days": {
+            "type": "number",
+            "nullable": true
+          },
+          "sum_loans_past_90_days": {
+            "type": "number",
+            "nullable": true
+          },
+          "last_loan_sum_danabijak": {
+            "type": "number",
+            "nullable": true
+          },
+          "last_reported_date_afpi": {
+            "type": "number",
+            "nullable": true
+          },
+          "count_loans_past_90_days": {
+            "type": "number",
+            "nullable": true
+          },
+          "max_dpd_dpd_max_last_180": {
+            "type": "number",
+            "nullable": true
+          },
+          "current_bad_outstanding_0": {
+            "type": "number",
+            "nullable": true
+          },
+          "dpd_max_bad_outstanding_0": {
+            "type": "number",
+            "nullable": true
+          },
+          "count_loans_before_60_days": {
+            "type": "number",
+            "nullable": true
+          },
+          "current_good_outstanding_0": {
+            "type": "number",
+            "nullable": true
+          },
+          "year_from_ktp_date_of_birth": {
+            "type": "number",
+            "nullable": true
+          },
+          "days_since_last_disbursement": {
+            "type": "number",
+            "nullable": true
+          },
+          "max_dpd_dpd_current_last_180": {
+            "type": "number",
+            "nullable": true
+          },
+          "days_since_first_disbursement": {
+            "type": "number",
+            "nullable": true
+          },
+          "first_fully_paid_reported_date": {
+            "type": "number",
+            "nullable": true
+          },
+          "sum_dpd_max_good_outstanding_0": {
+            "type": "number",
+            "nullable": true
+          },
+          "count_outstanding_loan_providers": {
+            "type": "number",
+            "nullable": true
+          },
+          "sum_loan_sums_30days_outstanding": {
+            "type": "number",
+            "nullable": true
+          },
+          "sum_of_loans_due_date_in_next_30": {
+            "type": "number",
+            "nullable": true
+          },
+          "count_disbursed_10jt_current_dpd_0": {
+            "type": "number",
+            "nullable": true
+          },
+          "avg_loan_sum_lt_dpd_max0dpd_30_days": {
+            "type": "number",
+            "nullable": true
+          },
+          "count_1jt_current_good_fully_paid_0": {
+            "type": "number",
+            "nullable": true
+          },
+          "count_5jt_current_good_outstanding0": {
+            "type": "number",
+            "nullable": true
+          },
+          "count_3jt_current_good_outstanding_0": {
+            "type": "number",
+            "nullable": true
+          },
+          "count_outstanding_loan_providers_bad_0": {
+            "type": "number",
+            "nullable": true
+          },
+          "days_since_first_disbursement_danabijak": {
+            "type": "number",
+            "nullable": true
+          },
+          "avg_disbursements_lt_30dpd_max_60_days_ago": {
+            "type": "number",
+            "nullable": true
+          },
+          "sum_disbursements_gt_30dpd_max_60_days_ago": {
+            "type": "number",
+            "nullable": true
+          },
+          "sum_disbursements_lt_30dpd_max_60_days_ago": {
+            "type": "number",
+            "nullable": true
+          },
+          "days_since_first_current_0_outstanding_date": {
+            "type": "number",
+            "nullable": true
+          },
+          "days_since_last_current_bad0_outstanding_date": {
+            "type": "number",
+            "nullable": true
+          },
+          "days_since_last_outstanding_disbursement_date": {
+            "type": "number",
+            "nullable": true
+          },
+          "days_since_first_current_bad0_outstanding_date": {
+            "type": "number",
+            "nullable": true
+          },
+          "max_principal_disbursed_lt_30dpd_max_60_days_ago": {
+            "type": "number",
+            "nullable": true
+          }
+        }
+      },
+      "CLIKIndividual": {
+        "type": "object",
+        "properties": {
+          "risk_level": {
+            "type": "string",
+            "nullable": true
+          },
+          "exclusion_rule": {
+            "type": "string"
+          },
+          "cb_subject_code": {
+            "type": "string"
+          },
+          "collateral_type": {
+            "type": "string",
+            "nullable": true
+          },
+          "cb_contract_code": {
+            "type": "string"
+          },
+          "providercodedesc": {
+            "type": "string",
+            "nullable": true
+          },
+          "subject_ref_date": {
+            "type": "string"
+          },
+          "clik_credit_score": {
+            "type": "string",
+            "nullable": true
+          },
+          "error_description": {
+            "type": "string",
+            "nullable": true
+          },
+          "contract_type_code": {
+            "type": "string",
+            "nullable": true
+          },
+          "footprints_count1month": {
+            "type": "string",
+            "nullable": true
+          },
+          "total_collateral_value": {
+            "type": "string",
+            "nullable": true
+          },
+          "footprints_count3months": {
+            "type": "string",
+            "nullable": true
+          },
+          "footprints_count6months": {
+            "type": "string",
+            "nullable": true
+          },
+          "provider_application_no": {
+            "type": "string",
+            "nullable": true
+          },
+          "footprints_count12months": {
+            "type": "string",
+            "nullable": true
+          },
+          "max_dpd_credit_contracts": {
+            "type": "string",
+            "nullable": true
+          },
+          "initial_granted_credit_limit": {
+            "type": "string",
+            "nullable": true
+          },
+          "max_dpd_credit_contracts_amount": {
+            "type": "string",
+            "nullable": true
+          },
+          "cbscore_exclusionrule_description": {
+            "type": "string",
+            "nullable": true
+          },
+          "count_loans_home_credit_indonesia_pt": {
+            "type": "string",
+            "nullable": true
+          },
+          "contractshistory_credit_stringssummary_active": {
+            "type": "string",
+            "nullable": true
+          },
+          "contractshistory_credit_stringssummary_closed": {
+            "type": "string",
+            "nullable": true
+          },
+          "count_loans_bank_oke_indonesia_d_h_bank_dinar": {
+            "type": "string",
+            "nullable": true
+          },
+          "contractshistory_credit_stringssummary_refused": {
+            "type": "string",
+            "nullable": true
+          },
+          "contractshistory_aggregateddata_contractsstring": {
+            "type": "string",
+            "nullable": true
+          },
+          "contractshistory_aggregateddata_totalcreditlimit": {
+            "type": "string",
+            "nullable": true
+          },
+          "contractshistory_aggregateddata_totaldebitbalance": {
+            "type": "string",
+            "nullable": true
+          },
+          "count_loans_pt_bank_jago_tbk_d_h_bank_artos_indonesia": {
+            "type": "string",
+            "nullable": true
+          },
+          "contractshistory_aggregateddata_reportingprovidersstring": {
+            "type": "string",
+            "nullable": true
+          },
+          "count_loans_caturnusa_sejahtera_finance_pt_d_h_mallaca_trust_finance": {
+            "type": "string",
+            "nullable": true
+          },
+          "pdf_url_report": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "CLIKCompany": {
+        "type": "object",
+        "properties": {
+          "raw": {
+            "$ref": "#/components/schemas/CLIKCompanyRawData"
+          },
+          "contacts": {
+            "type": "string",
+            "nullable": true
+          },
+          "addresses": {
+            "type": "string",
+            "nullable": true
+          },
+          "shareholders": {
+            "type": "string",
+            "nullable": true
+          },
+          "subject_code": {
+            "type": "string",
+            "nullable": true
+          },
+          "bonds_history": {
+            "type": "string",
+            "nullable": true
+          },
+          "credit_history": {
+            "type": "string",
+            "nullable": true
+          },
+          "last_update_date": {
+            "type": "string",
+            "nullable": true
+          },
+          "subject_ref_date": {
+            "type": "string",
+            "nullable": true
+          },
+          "provider_application_no": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "Error400Response": {
+        "type": "object",
+        "required": [
+          "error_code",
+          "message"
+        ],
+        "properties": {
+          "error_code": {
+            "type": "string",
+            "enum": [
+              "API_VALIDATION_ERROR",
+              "CREDIT_CARD_DATA_ERROR",
+              "INVALID_JSON_FORMAT",
+              "USER_NOT_FOUND",
+              "USER_ID_NOT_FOUND",
+              "LOAN_ID_NOT_FOUND",
+              "NO_ACTIVE_USER_FOUND",
+              "DOCUMENT_NOT_FOUND"
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "errors": {
+            "$ref": "#/components/schemas/ArrayOfErrors"
+          }
+        }
+      },
+      "Error401Response": {
+        "type": "object",
+        "required": [
+          "error_code",
+          "message"
+        ],
+        "properties": {
+          "error_code": {
+            "type": "string",
+            "enum": [
+              "INVALID_EMAIL_OR_PASSWORD",
+              "INVALID_TOKEN",
+              "INVALID_CREDENTIAL",
+              "EXPIRED_SESSION",
+              "AUTHORIZATION_NOT_FOUND",
+              "KEY_NOT_VALID"
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "errors": {
+            "$ref": "#/components/schemas/ArrayOfErrors"
+          }
+        }
+      },
+      "Error403Response": {
+        "type": "object",
+        "required": [
+          "error_code",
+          "message"
+        ],
+        "properties": {
+          "error_code": {
+            "type": "string",
+            "enum": [
+              "REQUEST_FORBIDDEN_ERROR"
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "errors": {
+            "$ref": "#/components/schemas/ArrayOfErrors"
+          }
+        }
+      },
+      "Error404Response": {
+        "type": "object",
+        "required": [
+          "error_code",
+          "message"
+        ],
+        "properties": {
+          "error_code": {
+            "type": "string",
+            "enum": [
+              "PARTNER_NOT_FOUND",
+              "CREDIT_CARD_CHARGE_NOT_FOUND_ERROR"
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "errors": {
+            "$ref": "#/components/schemas/ArrayOfErrors"
+          }
+        }
+      },
+      "Error409Response": {
+        "type": "object",
+        "required": [
+          "error_code",
+          "message"
+        ],
+        "properties": {
+          "error_code": {
+            "type": "string",
+            "enum": [
+              "DUPLICATE_EMAIL",
+              "FILE_TOO_BIG"
+            ]
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "Error415Response": {
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "errors": {
+            "$ref": "#/components/schemas/ArrayOfErrors"
+          }
+        }
+      },
+      "Error422Response": {
+        "type": "object",
+        "required": [
+          "error_code",
+          "message"
+        ],
+        "properties": {
+          "error_code": {
+            "type": "string",
+            "enum": [
+              "GENERATE_CHECKOUT_URL_ERROR",
+              "DUPLICATE_PAYMENT_ERROR"
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "errors": {
+            "$ref": "#/components/schemas/ArrayOfErrors"
+          }
+        }
+      },
+      "Error429Response": {
+        "type": "object",
+        "required": [
+          "error_code",
+          "message"
+        ],
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "Error500Response": {
+        "type": "object",
+        "required": [
+          "error_code",
+          "message"
+        ],
+        "properties": {
+          "error_code": {
+            "type": "string",
+            "enum": [
+              "INTERNAL_SERVER_ERROR",
+              "INTERNAL_UPSTREAM_ERROR"
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "errors": {
+            "$ref": "#/components/schemas/ArrayOfErrors"
+          }
+        }
+      },
+      "ArrayOfErrors": {
+        "nullable": true,
+        "type": "array",
+        "items": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "object"
+            }
+          ]
+        }
+      }
+    },
+    "parameters": {
+      "clientVersion": {
+        "in": "header",
+        "name": "client-version",
+        "description": "The requester's client version used to access this service",
+        "schema": {
+          "type": "string",
+          "example": "v1.0.0"
+        },
+        "required": false
+      },
+      "teamName": {
+        "in": "header",
+        "name": "team-name",
+        "description": "The requester's team [link](https://docs.google.com/document/d/1Bvs1A7VJwribkS9WM-s96ikXxgNa0fZrvLyLrIH811s/edit#heading=h.msfrxiz473dv)",
+        "schema": {
+          "type": "string",
+          "example": "disbursement"
+        },
+        "required": false
+      },
+      "serviceName": {
+        "in": "header",
+        "name": "service-name",
+        "description": "The requester's service name",
+        "schema": {
+          "type": "string",
+          "example": "disbursement-service"
+        },
+        "required": false
+      },
+      "userId": {
+        "in": "path",
+        "name": "userId",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "example": "1234567890abcdef-1234567890abcdef-1234567890abcdef"
+        }
+      },
+      "callbackTitle": {
+        "in": "path",
+        "name": "callbackTitle",
+        "schema": {
+          "type": "string",
+          "enum": [
+            "user-creation",
+            "user-verify",
+            "user-score",
+            "loan-status",
+            "bnpl-status"
+          ]
+        },
+        "required": true
+      },
+      "endpointKey": {
+        "in": "path",
+        "name": "endpointKey",
+        "schema": {
+          "type": "string",
+          "enum": [
+            "user-verify",
+            "user-score"
+          ]
+        },
+        "required": true
+      },
+      "partnerId": {
+        "in": "header",
+        "name": "partner-id",
+        "schema": {
+          "type": "string",
+          "minLength": 6
+        },
+        "required": true
+      }
+    },
+    "responses": {
+      "Error400": {
+        "description": "Invalid request",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error400Response"
+            }
+          }
+        }
+      },
+      "Error401": {
+        "description": "Invalid request",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error401Response"
+            }
+          }
+        }
+      },
+      "Error403": {
+        "description": "Invalid request",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error403Response"
+            }
+          }
+        }
+      },
+      "Error404": {
+        "description": "Resource not found",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error404Response"
+            }
+          }
+        }
+      },
+      "Error429": {
+        "description": "Too Many Requests",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error429Response"
+            }
+          }
+        }
+      },
+      "Error409": {
+        "description": "Conflict",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error409Response"
+            }
+          }
+        }
+      },
+      "Error500": {
+        "description": "Internal server error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error500Response"
+            }
+          }
+        }
+      },
+      "CreateDocument": {
+        "description": "Document created",
+        "content": {
+          "application/json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Document"
+                }
+              ],
+              "required": [
+                "id",
+                "type",
+                "presigned_url"
+              ]
+            }
+          }
+        }
+      },
+      "UpdateDocuments": {
+        "description": "Updated documents",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/Document"
+              }
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-KEY"
+      },
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      },
+      "BasicAuth": {
+        "type": "http",
+        "scheme": "basic"
+      }
+    }
+  }
+}
