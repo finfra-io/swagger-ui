@@ -15,18 +15,18 @@
       "url": "https://virtserver.swaggerhub.com/Finfra/partner_service/1.0.0"
     },
     {
-      "description": "Live environment",
-      "url": "https://partner-service-prod-finfra.elp.finfra.io"
+      "description": "Development environment",
+      "url": "https://partner-service-stg-dev-public.elp.finfra.io"
     },
     {
-      "description": "development environment",
-      "url": "https://partner-service-stg-dev-finfra.elp.finfra.io"
+      "description": "Live environment",
+      "url": "https://partner-service.elp.finfra.io"
     }
   ],
   "tags": [
     {
       "name": "Authentication",
-      "description": "Authentication\nFINFRA API authenticates via API keys accessible within the dashboard. Test keys are prefixed with fr_test_, while live keys use fr_live_.\nFor tighter security, consider restricted keys. <br> Keep your API keys confidential to prevent unauthorized access.\nNever expose them in public repositories or client-side code.\nAll API interactions must be over HTTPS; unauthenticated or HTTP requests will be rejected.\n<!-- Escaped XML-like tag -->\n"
+      "description": "To access our API, you must authenticate using Basic Authentication. This requires a Partner ID and Password, which our team will provide upon establishing a partnership. With these credentials, you can obtain an access token through our GET access token API endpoint.\n"
     },
     {
       "name": "Document",
@@ -4040,11 +4040,6 @@
       }
     },
     "securitySchemes": {
-      "ApiKeyAuth": {
-        "type": "apiKey",
-        "in": "header",
-        "name": "X-API-KEY"
-      },
       "BearerAuth": {
         "type": "http",
         "scheme": "bearer",
