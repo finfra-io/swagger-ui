@@ -17,19 +17,15 @@ servers:
   # Added by API Auto Mocking Plugin
   - description: SwaggerHub API Auto Mocking
     url: https://virtserver.swaggerhub.com/Finfra/partner_service/1.0.0
+  - description: Development environment
+    url: 'https://partner-service-stg-dev-public.elp.finfra.io'
   - description: Live environment
-    url: 'https://partner-service-prod-finfra.elp.finfra.io'
-  - description: development environment
-    url: 'https://partner-service-stg-dev-finfra.elp.finfra.io'
+    url: 'https://partner-service.elp.finfra.io'
 tags:
   - name: Authentication
     description: |
       Authentication
-      FINFRA API authenticates via API keys accessible within the dashboard. Test keys are prefixed with fr_test_, while live keys use fr_live_.
-      For tighter security, consider restricted keys. <br> Keep your API keys confidential to prevent unauthorized access.
-      Never expose them in public repositories or client-side code.
-      All API interactions must be over HTTPS; unauthenticated or HTTP requests will be rejected.
-      <!-- Escaped XML-like tag -->
+      To access our API, you must authenticate using Basic Authentication. This requires a Partner ID and Password, which our team will provide upon establishing a partnership. With these credentials, you can obtain an access token through our GET access token API endpoint.
   - name: Document
     description: |
       The KYC (Know Your Customer) process necessitates the population of certain documents into our system prior to enabling a partner to create a borrower profile. The following critical steps must be executed in sequence:
@@ -3024,10 +3020,6 @@ components:
               $ref: '#/components/schemas/Document'
 
   securitySchemes:
-    ApiKeyAuth: # arbitrary name for the security scheme
-      type: apiKey
-      in: header # can be "header", "query" or "cookie"
-      name: X-API-KEY
     BearerAuth:
       type: http
       scheme: bearer
