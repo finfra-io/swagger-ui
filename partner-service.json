@@ -2583,6 +2583,12 @@
           "npwp": {
             "type": "string"
           },
+          "legalEntity": {
+            "type": "string"
+          },
+          "establishmentDate": {
+            "type": "string"
+          },
           "phoneExt": {
             "type": "string"
           },
