@@ -214,7 +214,11 @@
     },
     "/api/core/users": {
       "post": {
-        "security": [],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
         "tags": [
           "Borrower"
         ],
@@ -276,7 +280,11 @@
     },
     "/api/core/users/{userId}": {
       "patch": {
-        "security": [],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
         "tags": [
           "Borrower"
         ],
@@ -333,7 +341,11 @@
     },
     "/api/core/users/{userId}/approve": {
       "post": {
-        "security": [],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
         "tags": [
           "Borrower"
         ],
@@ -390,7 +402,11 @@
     },
     "/api/core/users/{userId}/block": {
       "post": {
-        "security": [],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
         "tags": [
           "Borrower"
         ],

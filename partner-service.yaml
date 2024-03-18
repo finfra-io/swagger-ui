@@ -151,7 +151,8 @@ paths:
 
   /api/core/users:
     post:
-      security: []
+      security:
+        - BearerAuth: []
       tags:
         - Borrower
       operationId: createPartnerUsers
@@ -189,7 +190,8 @@ paths:
                 $ref: '#/components/schemas/Error500Response'
   /api/core/users/{userId}:
     patch:
-      security: []
+      security:
+        - BearerAuth: []
       tags:
         - Borrower
       operationId: updateSinglePartnerUsers
@@ -223,7 +225,8 @@ paths:
                 $ref: '#/components/schemas/Error500Response'
   /api/core/users/{userId}/approve:
     post:
-      security: []
+      security:
+        - BearerAuth: []
       tags:
         - Borrower
       operationId: approveUser
@@ -257,7 +260,8 @@ paths:
                 $ref: '#/components/schemas/Error500Response'
   /api/core/users/{userId}/block:
     post:
-      security: []
+      security:
+        - BearerAuth: []
       tags:
         - Borrower
       operationId: blockUser
