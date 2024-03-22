@@ -26,7 +26,7 @@
   "tags": [
     {
       "name": "Authentication",
-      "description": "To access our API, you must authenticate using Basic Authentication. This requires a Partner ID and Password, which our team will provide upon establishing a partnership. With these credentials, you can obtain an access token through our GET access token API endpoint.\n"
+      "description": "Authentication\nTo access our API, you must authenticate using Basic Authentication. This requires a Partner ID and Password, which our team will provide upon establishing a partnership. With these credentials, you can obtain an access token through our GET access token API endpoint.\n"
     },
     {
       "name": "Document",
@@ -990,7 +990,9 @@
             "enum": [
               "PERSONAL",
               "BUSINESS"
-            ]
+            ],
+            "minLength": 8,
+            "maxLength": 8
           },
           "entity": {
             "$ref": "#/components/schemas/UserEntity"
@@ -1000,7 +1002,9 @@
           },
           "swiftCode": {
             "type": "string",
-            "example": "BMRIIDJA"
+            "example": "BMRIIDJA",
+            "minLength": 3,
+            "maxLength": 10
           }
         }
       },
@@ -1070,10 +1074,14 @@
           "HIGH",
           "VERY_HIGH",
           "NOT_AVAILABLE"
-        ]
+        ],
+        "minLength": 3,
+        "maxLength": 20
       },
       "LoanProduct": {
         "type": "string",
+        "minLength": 7,
+        "maxLength": 50,
         "example": "finfra_sandbox_wr_IL_weekly",
         "enum": [
           "finfra_sandbox_wr_spl",
@@ -1124,10 +1132,12 @@
           },
           "requested_amount": {
             "type": "number",
+            "minimum": 1,
             "example": 1200000
           },
           "term": {
             "type": "number",
+            "minimum": 1,
             "example": 120
           },
           "fields": {
@@ -1135,18 +1145,31 @@
             "properties": {
               "annual_interest_rate": {
                 "type": "number",
+                "minimum": 1,
                 "nullable": true
               },
               "disbursement_fee": {
                 "type": "number",
+                "minimum": 0,
+                "nullable": true
+              },
+              "cs_payment_day": {
+                "type": "number",
+                "minimum": 0,
+                "nullable": true
+              },
+              "request_effective_on": {
+                "type": "string",
                 "nullable": true
               },
               "grace_term": {
                 "type": "number",
+                "minimum": 0,
                 "nullable": true
               },
               "interest_fee": {
                 "type": "number",
+                "minimum": 0,
                 "nullable": true
               },
               "partner_risk_level": {
@@ -1166,14 +1189,17 @@
         "properties": {
           "amount": {
             "type": "number",
-            "example": 1200000
+            "example": 1200000,
+            "minimum": 1
           },
           "description": {
             "type": "string",
+            "minLength": 1,
             "example": "0.3,null,null,LOW"
           },
           "term": {
             "type": "number",
+            "minLength": 0,
             "example": 120
           }
         }
@@ -1637,63 +1663,39 @@
           },
           "rt": {
             "type": "string",
-            "description": "RT"
+            "description": "RT",
+            "minLength": 5,
+            "maxLength": 5
           },
           "rw": {
             "type": "string",
-            "description": "RW"
+            "description": "RW",
+            "minLength": 5,
+            "maxLength": 5
           },
           "province": {
             "type": "string",
-            "enum": [
-              "JAWA_BARAT",
-              "BANTEN",
-              "DKI_JAKARTA",
-              "DI_YOGYAKARTA",
-              "JAWA_TENGAH",
-              "JAWA_TIMUR",
-              "BENGKULU",
-              "JAMBI",
-              "NANGROE_ACEH_DARUSSALAM",
-              "SUMATERA_UTARA",
-              "SUMATERA_BARAT",
-              "RIAU",
-              "SUMATERA_SELATAN",
-              "KEPULAUAN_BANGKA_BELITUNG",
-              "LAMPUNG",
-              "KALIMANTAN_SELATAN",
-              "KALIMANTAN_BARAT",
-              "KALIMANTAN_TIMUR",
-              "KALIMANTAN_TENGAH",
-              "SULAWESI_TENGAH",
-              "SULAWESI_SELATAN",
-              "SULAWESI_UTARA",
-              "GORONTALO",
-              "SULAWESI_TENGGARA",
-              "NUSA_TENGGARA_BARAT",
-              "BALI",
-              "NUSA_TENGGARA_TIMUR",
-              "MALUKU",
-              "MALUKU_UTARA",
-              "KEPULAUAN_RIAU",
-              "SULAWESI_BARAT",
-              "PAPUA_BARAT",
-              "PAPUA",
-              "KALIMANTAN_UTARA",
-              "OTHER"
-            ]
+            "description": "Address province",
+            "minLength": 5,
+            "maxLength": 30
           },
           "city": {
             "type": "string",
-            "description": "Address city"
+            "description": "Address city",
+            "minLength": 5,
+            "maxLength": 30
           },
           "district": {
             "type": "string",
-            "description": "Address district"
+            "description": "Address district",
+            "minLength": 5,
+            "maxLength": 30
           },
           "village": {
             "type": "string",
-            "description": "Address village"
+            "description": "Address village",
+            "minLength": 5,
+            "maxLength": 30
           }
         }
       },
@@ -1701,7 +1703,9 @@
         "type": "object",
         "properties": {
           "dati2": {
-            "type": "string"
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 30
           }
         }
       },
@@ -1711,7 +1715,9 @@
           "postal_code": {
             "type": "string",
             "description": "Address postal_code",
-            "pattern": "^\\d{5}$"
+            "pattern": "^\\d{5}$",
+            "minLength": 3,
+            "maxLength": 6
           }
         }
       },
@@ -1726,6 +1732,8 @@
       },
       "CountryCode": {
         "type": "string",
+        "minLength": 2,
+        "maxLength": 4,
         "enum": [
           "AF",
           "AX",
@@ -1990,27 +1998,39 @@
           "emailAddress": {
             "type": "string",
             "format": "email",
-            "description": "Email address of the management representative"
+            "description": "Email address of the management representative",
+            "minLength": 6,
+            "maxLength": 128
           },
           "mobileNumber": {
             "type": "string",
             "description": "Phone number of the management representative in E.164 format",
-            "pattern": "^\\+62\\d{1,14}$"
+            "pattern": "^\\+62\\d{1,14}$",
+            "minLength": 10,
+            "maxLength": 16
           },
           "address": {
             "type": "string"
           },
           "gender": {
             "type": "string",
-            "example": "MALE"
+            "example": "MALE",
+            "enum": [
+              "MALE",
+              "FEMALE"
+            ]
           },
           "identityNumber": {
-            "type": "string"
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 20
           }
         }
       },
       "UserBusinessTypeCommonEnum": {
         "type": "string",
+        "minLength": 5,
+        "maxLength": 100,
         "enum": [
           "OTHER",
           "AGRICULTURE_HUNTING_FARMING_FACILITIES",
@@ -2283,6 +2303,8 @@
       },
       "UserIndustryCommonEnum": {
         "type": "string",
+        "minLength": 5,
+        "maxLength": 100,
         "enum": [
           "PRIVATE_PERSON_NAME",
           "PRIVATE_PERSON_NUMBERED",
@@ -2593,7 +2615,9 @@
         "description": "User entity required if user.type is BUSINESS",
         "properties": {
           "name": {
-            "type": "string"
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 50
           },
           "address": {
             "allOf": [
@@ -2608,17 +2632,23 @@
           "phoneNumber": {
             "type": "string",
             "description": "phone number in E.164 format",
-            "pattern": "^\\+62\\d{1,14}$"
+            "pattern": "^\\+62\\d{1,14}$",
+            "minLength": 10,
+            "maxLength": 16
           },
           "fax": {
             "type": "string",
             "description": "Entity phone number in E.164 format",
-            "pattern": "^\\+62\\d{1,14}$"
+            "pattern": "^\\+62\\d{1,14}$",
+            "minLength": 10,
+            "maxLength": 16
           },
           "email": {
             "type": "string",
             "format": "email",
-            "description": "Email address of authorised signatory"
+            "description": "Email address of authorised signatory",
+            "minLength": 6,
+            "maxLength": 128
           },
           "businessType": {
             "$ref": "#/components/schemas/UserBusinessTypeCommonEnum"
@@ -2633,13 +2663,9 @@
             "$ref": "#/components/schemas/CountryCode"
           },
           "npwp": {
-            "type": "string"
-          },
-          "legalEntity": {
-            "type": "string"
-          },
-          "establishmentDate": {
-            "type": "string"
+            "type": "string",
+            "minLength": 15,
+            "maxLength": 16
           },
           "phoneExt": {
             "type": "string"
@@ -2648,6 +2674,46 @@
             "$ref": "#/components/schemas/UserEntityManagements"
           }
         }
+      },
+      "ProvinceEnum": {
+        "type": "string",
+        "enum": [
+          "JAWA_BARAT",
+          "BANTEN",
+          "DKI_JAKARTA",
+          "DI_YOGYAKARTA",
+          "JAWA_TENGAH",
+          "JAWA_TIMUR",
+          "BENGKULU",
+          "JAMBI",
+          "NANGROE_ACEH_DARUSSALAM",
+          "SUMATERA_UTARA",
+          "SUMATERA_BARAT",
+          "RIAU",
+          "SUMATERA_SELATAN",
+          "KEPULAUAN_BANGKA_BELITUNG",
+          "LAMPUNG",
+          "KALIMANTAN_SELATAN",
+          "KALIMANTAN_BARAT",
+          "KALIMANTAN_TIMUR",
+          "KALIMANTAN_TENGAH",
+          "SULAWESI_TENGAH",
+          "SULAWESI_SELATAN",
+          "SULAWESI_UTARA",
+          "GORONTALO",
+          "SULAWESI_TENGGARA",
+          "NUSA_TENGGARA_BARAT",
+          "BALI",
+          "NUSA_TENGGARA_TIMUR",
+          "MALUKU",
+          "MALUKU_UTARA",
+          "KEPULAUAN_RIAU",
+          "SULAWESI_BARAT",
+          "PAPUA_BARAT",
+          "PAPUA",
+          "KALIMANTAN_UTARA",
+          "OTHER"
+        ]
       },
       "FtmCreateCallback": {
         "type": "object",
