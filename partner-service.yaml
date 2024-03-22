@@ -618,6 +618,8 @@ components:
           enum:
             - PERSONAL
             - BUSINESS
+          minLength: 8
+          maxLength: 8
         entity:
           $ref: '#/components/schemas/UserEntity'
         authorisedSignatory:
@@ -625,6 +627,8 @@ components:
         swiftCode:
           type: string
           example: 'BMRIIDJA'
+          minLength: 3
+          maxLength: 10
 
     Loan:
       type: object
@@ -677,8 +681,12 @@ components:
         - HIGH
         - VERY_HIGH
         - NOT_AVAILABLE
+      minLength: 3
+      maxLength: 20
     LoanProduct:
       type: string
+      minLength: 7
+      maxLength: 50
       example: finfra_sandbox_wr_IL_weekly
       enum:
         - finfra_sandbox_wr_spl
@@ -726,24 +734,37 @@ components:
           $ref: '#/components/schemas/LoanProduct'
         requested_amount:
           type: number
+          minimum: 1
           example: 1200000
         term:
           type: number
+          minimum: 1
           example: 120
         fields:
           type: object
           properties:
             annual_interest_rate:
               type: number
+              minimum: 1
               nullable: true
             disbursement_fee:
               type: number
+              minimum: 0
+              nullable: true
+            cs_payment_day:
+              type: number
+              minimum: 0
+              nullable: true
+            request_effective_on:
+              type: string
               nullable: true
             grace_term:
               type: number
+              minimum: 0
               nullable: true
             interest_fee:
               type: number
+              minimum: 0
               nullable: true
             partner_risk_level:
               $ref: '#/components/schemas/LoanRiskLevel'
@@ -758,11 +779,14 @@ components:
         amount:
           type: number
           example: 1200000
+          minimum: 1
         description:
           type: string
+          minLength: 1
           example: '0.3,null,null,LOW'
         term:
           type: number
+          minLength: 0
           example: 120
 
     GetAccessToken:
@@ -1156,26 +1180,40 @@ components:
         rt:
           type: string
           description: 'RT'
+          minLength: 5
+          maxLength: 5
         rw:
           type: string
           description: 'RW'
+          minLength: 5
+          maxLength: 5
         province:
-          $ref: '#/components/schemas/ProvinceEnum'
+          type: string
           description: 'Address province'
+          minLength: 5
+          maxLength: 30
         city:
           type: string
           description: 'Address city'
+          minLength: 5
+          maxLength: 30
         district:
           type: string
           description: 'Address district'
+          minLength: 5
+          maxLength: 30
         village:
           type: string
           description: 'Address village'
+          minLength: 5
+          maxLength: 30
     AddressDati2:
       type: object
       properties:
         dati2:
           type: string
+          minLength: 5
+          maxLength: 30
     AddressPostalCode:
       type: object
       properties:
@@ -1183,6 +1221,8 @@ components:
           type: string
           description: 'Address postal_code'
           pattern: '^\d{5}$'
+          minLength: 3
+          maxLength: 6
     AddressCountry:
       type: object
       properties:
@@ -1191,6 +1231,8 @@ components:
           description: 'Address country'
     CountryCode:
       type: string
+      minLength: 2
+      maxLength: 4
       enum:
         - AF
         - AX
@@ -1452,19 +1494,30 @@ components:
           type: string
           format: email
           description: 'Email address of the management representative'
+          minLength: 6
+          maxLength: 128
         mobileNumber:
           type: string
           description: 'Phone number of the management representative in E.164 format'
           pattern: '^\+62\d{1,14}$'
+          minLength: 10
+          maxLength: 16
         address:
           type: string
         gender:
           type: string
           example: MALE
+          enum:
+            - MALE
+            - FEMALE
         identityNumber:
           type: string
+          minLength: 5
+          maxLength: 20
     UserBusinessTypeCommonEnum:
       type: string
+      minLength: 5
+      maxLength: 100
       enum:
         - OTHER
         - AGRICULTURE_HUNTING_FARMING_FACILITIES
@@ -1728,6 +1781,8 @@ components:
           type: string
     UserIndustryCommonEnum:
       type: string
+      minLength: 5
+      maxLength: 100
       enum:
         - PRIVATE_PERSON_NAME
         - PRIVATE_PERSON_NUMBERED
@@ -1974,12 +2029,15 @@ components:
               properties:
                 number:
                   type: string
+
     UserEntity:
       type: object
       description: 'User entity required if user.type is BUSINESS'
       properties:
         name:
           type: string
+          minLength: 5
+          maxLength: 50
         address:
           allOf:
             - $ref: '#/components/schemas/Address'
@@ -1988,14 +2046,20 @@ components:
           type: string
           description: 'phone number in E.164 format'
           pattern: '^\+62\d{1,14}$'
+          minLength: 10
+          maxLength: 16
         fax:
           type: string
           description: 'Entity phone number in E.164 format'
           pattern: '^\+62\d{1,14}$'
+          minLength: 10
+          maxLength: 16
         email:
           type: string
           format: email
           description: 'Email address of authorised signatory'
+          minLength: 6
+          maxLength: 128
         businessType:
           $ref: '#/components/schemas/UserBusinessTypeCommonEnum'
         industry:
@@ -2006,14 +2070,13 @@ components:
           $ref: '#/components/schemas/CountryCode'
         npwp:
           type: string
-        legalEntity:
-          type: string
-        establishmentDate:
-          type: string
+          minLength: 15
+          maxLength: 16
         phoneExt:
           type: string
         managements:
           $ref: '#/components/schemas/UserEntityManagements'
+
     ProvinceEnum:
       type: string
       enum:
