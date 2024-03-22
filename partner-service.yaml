@@ -1176,34 +1176,41 @@ components:
       properties:
         streetAddress:
           type: string
+          example: 'Jl. Kenangan'
           description: 'Only field that is required in address'
         rt:
           type: string
+          example: '00013'
           description: 'RT'
           minLength: 5
           maxLength: 5
         rw:
           type: string
+          example: '00001'
           description: 'RW'
           minLength: 5
           maxLength: 5
         province:
           type: string
+          example: 'Jawa Barat'
           description: 'Address province'
           minLength: 5
           maxLength: 30
         city:
           type: string
+          example: 'Garut'
           description: 'Address city'
           minLength: 5
           maxLength: 30
         district:
           type: string
+          example: 'Cibalong'
           description: 'Address district'
           minLength: 5
           maxLength: 30
         village:
           type: string
+          example: 'Sancang'
           description: 'Address village'
           minLength: 5
           maxLength: 30
@@ -1486,10 +1493,36 @@ components:
       properties:
         name:
           type: string
+          example: 'John Doe Siblings'
           description: 'Full name of the management representative according to KTP'
         position:
           type: string
+          example: "MANAGEMENT_COMISSIONER"
           description: 'Position of the management representative'
+          enum:
+            - OWNER_MANAGEMENT
+            - MANAGEMENT_PRESIDENT_DIRECTOR
+            - MANAGEMENT_DIRECTOR
+            - MANAGEMENT_PRESIDENT_COMMISSIONER
+            - MANAGEMENT_COMISSIONER
+            - MANAGEMENT_BOARD_OF_DIRECTORS
+            - MANAGER_OWNER_NOT_MANAGEMENT
+            - MANAGEMENT_PUBLIC
+            - MANAGEMENT_GENERAL_CHAIRMAN
+            - OWNER_CHAIRMAN
+            - OWNER_SECRETARY
+            - OWNER_TREASURER
+            - OWNER_OTHER
+            - MANAGEMENT_NOT_OWNER
+            - NOT_OWNER_PRESIDENT_DIRECTOR
+            - NOT_OWNER_DIRECTOR
+            - NOT_OWNER_PRINCIPAL_COMMISSIONER
+            - NOT_OWNER_COMMISSIONER
+            - NOT_OWNER_BOARD_OF_DIRECTORS
+            - NOT_OWNER_CHAIRMAN
+            - NOT_OWNER_SECRETARY
+            - NOT_OWNER_TREASURER
+            - NOT_OWNER_OTHER
         emailAddress:
           type: string
           format: email
@@ -1504,6 +1537,7 @@ components:
           maxLength: 16
         address:
           type: string
+          example: 'Jl Kemana Saja Asal Senang no. 13'
         gender:
           type: string
           example: MALE
@@ -1512,6 +1546,7 @@ components:
             - FEMALE
         identityNumber:
           type: string
+          example: '3275927455820001'
           minLength: 5
           maxLength: 20
     UserBusinessTypeCommonEnum:
@@ -1875,11 +1910,13 @@ components:
       properties:
         firstName:
           type: string
+          example: 'Hari'
           minLength: 3
           maxLength: 30
           description: 'First name of authorised signatory'
         lastName:
           type: string
+          example: 'Raya'
           minLength: 3
           maxLength: 30
           description: 'Last name of authorised signatory'
@@ -1890,10 +1927,12 @@ components:
           minLength: 10
         birthPlace:
           type: string
+          example: 'Jakarta'
           minLength: 3
           maxLength: 30
         email:
           type: string
+          example: 'hari.raya.siapa@gmail.com'
           format: email
           description: 'Email address of authorised signatory'
           minLength: 6
@@ -1985,13 +2024,12 @@ components:
         address:
           allOf:
             - $ref: '#/components/schemas/Address'
-            - $ref: '#/components/schemas/AddressDati2'
             - $ref: '#/components/schemas/AddressPostalCode'
-            - $ref: '#/components/schemas/AddressCountry'
         mobileNumber:
           type: string
           description: 'Mobile number of the authorised signatory in E.164 format'
           pattern: '^\+62\d{1,14}$'
+          example: '+6281278237271'
           minLength: 10
           maxLength: 16
         bankAccount:
@@ -2013,6 +2051,7 @@ components:
               properties:
                 number:
                   type: string
+                  example: '3275927455820001'
                   minLength: 16
                   maxLength: 16
                 file:
@@ -2024,6 +2063,7 @@ components:
                   type: string
                   minLength: 3
                   maxLength: 30
+                  example: 'Wamena'
                 expiryDate:
                   type: string
                   example: '2099-11-01'
@@ -2047,6 +2087,7 @@ components:
               properties:
                 number:
                   type: string
+                  example: '820007959044000'
                   minLength: 15
                   maxLength: 16
 
@@ -2056,6 +2097,7 @@ components:
       properties:
         name:
           type: string
+          example: 'PT. Mencari Cinta Sejati'
           minLength: 5
           maxLength: 50
         address:
@@ -2090,10 +2132,12 @@ components:
           $ref: '#/components/schemas/CountryCode'
         npwp:
           type: string
+          example: '820007959044000'
           minLength: 15
           maxLength: 16
         phoneExt:
           type: string
+          example: '4'
         managements:
           $ref: '#/components/schemas/UserEntityManagements'
 
