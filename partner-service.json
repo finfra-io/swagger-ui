@@ -2269,37 +2269,7 @@
           "FOR_2_WHEELED_MOTOR_VEHICLES",
           "OTHERS_HOUSEHOLD_APPLIANCES",
           "OTHERS_OTHERS"
-        ],
-        "properties": {
-          "name": {
-            "type": "string",
-            "description": "Full name of the management representative according to KTP"
-          },
-          "position": {
-            "type": "string",
-            "description": "Position of the management representative"
-          },
-          "emailAddress": {
-            "type": "string",
-            "format": "email",
-            "description": "Email address of the management representative"
-          },
-          "mobileNumber": {
-            "type": "string",
-            "description": "Phone number of the management representative in E.164 format",
-            "pattern": "^\\+62\\d{1,14}$"
-          },
-          "address": {
-            "type": "string"
-          },
-          "gender": {
-            "type": "string",
-            "example": "MALE"
-          },
-          "identityNumber": {
-            "type": "string"
-          }
-        }
+        ]
       },
       "UserIndustryCommonEnum": {
         "type": "string",
