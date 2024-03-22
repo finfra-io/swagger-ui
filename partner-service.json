@@ -2400,15 +2400,15 @@
           "holderName": {
             "type": "string",
             "example": "John Doe",
-            "minLength": 3,
-            "maxLength": 50
+            "minLength": 5,
+            "maxLength": 60
           },
           "number": {
             "type": "string",
             "pattern": "^\\d+$",
             "example": "123123123213",
-            "minLength": 5,
-            "maxLength": 50
+            "minLength": 10,
+            "maxLength": 20
           }
         }
       },
@@ -2465,8 +2465,8 @@
             "example": "hari.raya.siapa@gmail.com",
             "format": "email",
             "description": "Email address of authorised signatory",
-            "minLength": 6,
-            "maxLength": 128
+            "minLength": 5,
+            "maxLength": 64
           },
           "motherMaidenNameName": {
             "type": "string",
@@ -2581,8 +2581,8 @@
             "description": "Mobile number of the authorised signatory in E.164 format",
             "pattern": "^\\+62\\d{1,14}$",
             "example": "+6281278237271",
-            "minLength": 10,
-            "maxLength": 16
+            "minLength": 9,
+            "maxLength": 20
           },
           "bankAccount": {
             "$ref": "#/components/schemas/UserBankAccount"
@@ -2672,7 +2672,7 @@
           "name": {
             "type": "string",
             "example": "PT. Mencari Cinta Sejati",
-            "minLength": 5,
+            "minLength": 20,
             "maxLength": 50
           },
           "address": {
@@ -2705,8 +2705,8 @@
             "type": "string",
             "format": "email",
             "description": "Email address of authorised signatory",
-            "minLength": 6,
-            "maxLength": 128
+            "minLength": 5,
+            "maxLength": 64
           },
           "businessType": {
             "$ref": "#/components/schemas/UserBusinessTypeCommonEnum"
@@ -2723,7 +2723,7 @@
           "npwp": {
             "type": "string",
             "example": "820007959044000",
-            "minLength": 15,
+            "minLength": 16,
             "maxLength": 16
           },
           "phoneExt": {
