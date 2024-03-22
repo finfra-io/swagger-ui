@@ -1226,6 +1226,7 @@ components:
       properties:
         postal_code:
           type: string
+          example: '17424'
           description: 'Address postal_code'
           pattern: '^\d{5}$'
           minLength: 3
@@ -1533,6 +1534,7 @@ components:
           type: string
           description: 'Phone number of the management representative in E.164 format'
           pattern: '^\+62\d{1,14}$'
+          example: '+6285278237569'
           minLength: 10
           maxLength: 16
         address:
@@ -2056,6 +2058,7 @@ components:
                   maxLength: 16
                 file:
                   type: string
+                  example: "6544dff98f002963846527e6"
                   description: 'The id of KTP document'
                   pattern: '^[a-f\d]{24}$'
                   minLength: 5
@@ -2077,6 +2080,7 @@ components:
               properties:
                 file:
                   type: string
+                  example: "6544dff98f002963887537a9"
                   description: 'The id of selfie document'
                   pattern: '^[a-f\d]{24}$'
                   minLength: 5
@@ -2107,12 +2111,14 @@ components:
         phoneNumber:
           type: string
           description: 'phone number in E.164 format'
+          example: "+6287711998822"
           pattern: '^\+62\d{1,14}$'
           minLength: 10
           maxLength: 16
         fax:
           type: string
           description: 'Entity phone number in E.164 format'
+          example: '+62215647888'
           pattern: '^\+62\d{1,14}$'
           minLength: 10
           maxLength: 16
