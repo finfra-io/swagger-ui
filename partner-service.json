@@ -1754,10 +1754,10 @@
       "AddressPostalCode": {
         "type": "object",
         "properties": {
-          "postal_code": {
+          "postalCode": {
             "type": "string",
             "example": "17424",
-            "description": "Address postal_code",
+            "description": "Address postalCode",
             "pattern": "^\\d{5}$",
             "minLength": 3,
             "maxLength": 6
