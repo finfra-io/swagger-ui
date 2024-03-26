@@ -2706,7 +2706,7 @@
         "properties": {
           "name": {
             "type": "string",
-            "example": "PT. Mencari Cinta Sejati",
+            "example": "PT Mencari Cinta Sejati",
             "minLength": 5,
             "maxLength": 50
           },
