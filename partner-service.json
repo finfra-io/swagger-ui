@@ -1678,10 +1678,45 @@
           },
           "province": {
             "type": "string",
-            "example": "Jawa Barat",
+            "example": "JAWA_BARAT",
             "description": "Address province",
-            "minLength": 5,
-            "maxLength": 30
+            "enum": [
+              "JAWA_BARAT",
+              "BANTEN",
+              "DKI_JAKARTA",
+              "DI_YOGYAKARTA",
+              "JAWA_TENGAH",
+              "JAWA_TIMUR",
+              "BENGKULU",
+              "JAMBI",
+              "NANGROE_ACEH_DARUSSALAM",
+              "SUMATERA_UTARA",
+              "SUMATERA_BARAT",
+              "RIAU",
+              "SUMATERA_SELATAN",
+              "KEPULAUAN_BANGKA_BELITUNG",
+              "LAMPUNG",
+              "KALIMANTAN_SELATAN",
+              "KALIMANTAN_BARAT",
+              "KALIMANTAN_TIMUR",
+              "KALIMANTAN_TENGAH",
+              "SULAWESI_TENGAH",
+              "SULAWESI_SELATAN",
+              "SULAWESI_UTARA",
+              "GORONTALO",
+              "SULAWESI_TENGGARA",
+              "NUSA_TENGGARA_BARAT",
+              "BALI",
+              "NUSA_TENGGARA_TIMUR",
+              "MALUKU",
+              "MALUKU_UTARA",
+              "KEPULAUAN_RIAU",
+              "SULAWESI_BARAT",
+              "PAPUA_BARAT",
+              "PAPUA",
+              "KALIMANTAN_UTARA",
+              "OTHER"
+            ]
           },
           "city": {
             "type": "string",
@@ -2059,7 +2094,7 @@
           },
           "identityNumber": {
             "type": "string",
-            "example": "3275927455820001",
+            "example": "3275062009921981",
             "minLength": 5,
             "maxLength": 20
           }
@@ -2606,7 +2641,7 @@
                 "properties": {
                   "number": {
                     "type": "string",
-                    "example": "3275927455820001",
+                    "example": "3275062009921981",
                     "minLength": 16,
                     "maxLength": 16
                   },
@@ -2672,7 +2707,7 @@
           "name": {
             "type": "string",
             "example": "PT. Mencari Cinta Sejati",
-            "minLength": 20,
+            "minLength": 5,
             "maxLength": 50
           },
           "address": {
@@ -2729,6 +2764,15 @@
           "phoneExt": {
             "type": "string",
             "example": "4"
+          },
+          "legalEntity": {
+            "type": "string",
+            "example": "PT"
+          },
+          "establishmentDate": {
+            "type": "string",
+            "example": "1995-11-01",
+            "format": "date"
           },
           "managements": {
             "$ref": "#/components/schemas/UserEntityManagements"
