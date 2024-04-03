@@ -1659,95 +1659,40 @@
         "properties": {
           "streetAddress": {
             "type": "string",
-            "example": "Jl. Kenangan",
-            "description": "Only field that is required in address"
+            "description": "Only field that is required in address",
+            "example": "Jl. Kenangan"
           },
           "rt": {
             "type": "string",
-            "example": "00013",
+            "minLength": 1,
+            "maxLength": 3,
             "description": "RT",
-            "minLength": 5,
-            "maxLength": 5
+            "example": "01"
           },
           "rw": {
             "type": "string",
-            "example": "00001",
+            "minLength": 1,
+            "maxLength": 3,
             "description": "RW",
-            "minLength": 5,
-            "maxLength": 5
+            "example": "01"
           },
           "province": {
-            "type": "string",
-            "example": "JAWA_BARAT",
-            "description": "Address province",
-            "enum": [
-              "JAWA_BARAT",
-              "BANTEN",
-              "DKI_JAKARTA",
-              "DI_YOGYAKARTA",
-              "JAWA_TENGAH",
-              "JAWA_TIMUR",
-              "BENGKULU",
-              "JAMBI",
-              "NANGROE_ACEH_DARUSSALAM",
-              "SUMATERA_UTARA",
-              "SUMATERA_BARAT",
-              "RIAU",
-              "SUMATERA_SELATAN",
-              "KEPULAUAN_BANGKA_BELITUNG",
-              "LAMPUNG",
-              "KALIMANTAN_SELATAN",
-              "KALIMANTAN_BARAT",
-              "KALIMANTAN_TIMUR",
-              "KALIMANTAN_TENGAH",
-              "SULAWESI_TENGAH",
-              "SULAWESI_SELATAN",
-              "SULAWESI_UTARA",
-              "GORONTALO",
-              "SULAWESI_TENGGARA",
-              "NUSA_TENGGARA_BARAT",
-              "BALI",
-              "NUSA_TENGGARA_TIMUR",
-              "MALUKU",
-              "MALUKU_UTARA",
-              "KEPULAUAN_RIAU",
-              "SULAWESI_BARAT",
-              "PAPUA_BARAT",
-              "PAPUA",
-              "KALIMANTAN_UTARA",
-              "OTHER"
-            ]
+            "$ref": "#/components/schemas/ProvinceList"
           },
           "city": {
             "type": "string",
-            "example": "Garut",
             "description": "Address city",
-            "minLength": 5,
-            "maxLength": 30
+            "example": "string of city"
           },
           "district": {
             "type": "string",
-            "example": "Cibalong",
             "description": "Address district",
-            "minLength": 5,
-            "maxLength": 30
+            "example": "string of district"
           },
           "village": {
             "type": "string",
-            "example": "Sancang",
             "description": "Address village",
-            "minLength": 5,
-            "maxLength": 30
-          }
-        }
-      },
-      "AddressDati2": {
-        "type": "object",
-        "properties": {
-          "dati2": {
-            "type": "string",
-            "minLength": 5,
-            "maxLength": 30
+            "example": "string of village"
           }
         }
       },
@@ -1756,11 +1701,10 @@
         "properties": {
           "postalCode": {
             "type": "string",
-            "example": "17424",
-            "description": "Address postalCode",
+            "description": "Address postal_code",
             "pattern": "^\\d{5}$",
-            "minLength": 3,
-            "maxLength": 6
+            "minLength": 5,
+            "maxLength": 5
           }
         }
       },
@@ -1769,9 +1713,51 @@
         "properties": {
           "country": {
             "type": "string",
-            "description": "Address country"
+            "description": "Address country",
+            "example": "ID"
           }
         }
+      },
+      "ProvinceList": {
+        "type": "string",
+        "description": "Address province",
+        "enum": [
+          "JAWA_BARAT",
+          "BANTEN",
+          "DKI_JAKARTA",
+          "DI_YOGYAKARTA",
+          "JAWA_TENGAH",
+          "JAWA_TIMUR",
+          "BENGKULU",
+          "JAMBI",
+          "NANGROE_ACEH_DARUSSALAM",
+          "SUMATERA_UTARA",
+          "SUMATERA_BARAT",
+          "RIAU",
+          "SUMATERA_SELATAN",
+          "KEPULAUAN_BANGKA_BELITUNG",
+          "LAMPUNG",
+          "KALIMANTAN_SELATAN",
+          "KALIMANTAN_BARAT",
+          "KALIMANTAN_TIMUR",
+          "KALIMANTAN_TENGAH",
+          "SULAWESI_TENGAH",
+          "SULAWESI_SELATAN",
+          "SULAWESI_UTARA",
+          "GORONTALO",
+          "SULAWESI_TENGGARA",
+          "NUSA_TENGGARA_BARAT",
+          "BALI",
+          "NUSA_TENGGARA_TIMUR",
+          "MALUKU",
+          "MALUKU_UTARA",
+          "KEPULAUAN_RIAU",
+          "SULAWESI_BARAT",
+          "PAPUA_BARAT",
+          "PAPUA",
+          "KALIMANTAN_UTARA",
+          "OTHER"
+        ]
       },
       "CountryCode": {
         "type": "string",
@@ -2028,12 +2014,101 @@
           "ZW"
         ]
       },
+      "MaritalEnum": {
+        "type": "string",
+        "enum": [
+          "SINGLE",
+          "MARRIED",
+          "WIDOWER",
+          "WIDOW"
+        ],
+        "minLength": 5,
+        "maxLength": 10
+      },
+      "GenderEnum": {
+        "type": "string",
+        "enum": [
+          "MALE",
+          "FEMALE"
+        ],
+        "minLength": 4,
+        "maxLength": 6
+      },
+      "TitleEnum": {
+        "type": "string",
+        "enum": [
+          "BPK",
+          "IBU",
+          "SDR",
+          "SDRI"
+        ],
+        "minLength": 3,
+        "maxLength": 4
+      },
+      "ReligionEnum": {
+        "type": "string",
+        "enum": [
+          "ISLAM",
+          "CHRISTIAN",
+          "CATHOLIC",
+          "BUDDHIST",
+          "HINDU",
+          "CONFUCIAN",
+          "OTHER"
+        ],
+        "minLength": 5,
+        "maxLength": 15
+      },
+      "JobEnum": {
+        "type": "string",
+        "enum": [
+          "PRIVATE_SECTOR_EMPLOYEE",
+          "STATE_OWNED_ENTERPRISE_EMPLOYEE",
+          "NATIONAL_MILITARY_OR_POLICE_OFFICER",
+          "BUSINESS_OWNER",
+          "TRADER",
+          "FARMER_OR_FISHERMAN",
+          "STUDENT",
+          "HOUSEWIFE",
+          "UNEMPLOYED",
+          "EMPLOYEE",
+          "ENTREPRENEUR",
+          "STATE_OFFICIAL",
+          "ACCOUNTANT",
+          "LAWYER_OR_NOTARY",
+          "PROFESSION",
+          "RETIREE",
+          "PRIVATE_LECTURER_OR_TEACHER",
+          "PUBLIC_LECTURER_OR_TEACHER",
+          "DOCTOR",
+          "BNI_EMPLOYEE",
+          "BNI_AFFILIATE_UNIT",
+          "GOVERNMENT_EMPLOYEE",
+          "OTHER"
+        ],
+        "minLength": 5,
+        "maxLength": 35
+      },
+      "EducationEnum": {
+        "type": "string",
+        "enum": [
+          "ELEMENTARY_SCHOOL",
+          "JUNIOR_HIGH_SCHOOL",
+          "HIGH_SCHOOL_OR_EQUIVALENT",
+          "ACADEMY_OR_DIPLOMA",
+          "BACHELORS_DEGREE",
+          "MASTERS_DEGREE",
+          "PHD"
+        ],
+        "minLength": 3,
+        "maxLength": 25
+      },
       "UserEntityManagementsCommonItem": {
         "properties": {
           "name": {
             "type": "string",
-            "example": "John Doe Siblings",
-            "description": "Full name of the management representative according to KTP"
+            "description": "Full name of the management representative according to KTP",
+            "example": "name of management people"
           },
           "position": {
             "type": "string",
@@ -2076,13 +2151,13 @@
             "type": "string",
             "description": "Phone number of the management representative in E.164 format",
             "pattern": "^\\+62\\d{1,14}$",
-            "example": "+6285278237569",
             "minLength": 10,
-            "maxLength": 16
+            "maxLength": 16,
+            "example": "+6281274384381"
           },
           "address": {
             "type": "string",
-            "example": "Jl Kemana Saja Asal Senang no. 13"
+            "example": "string of address"
           },
           "gender": {
             "type": "string",
@@ -2094,9 +2169,9 @@
           },
           "identityNumber": {
             "type": "string",
-            "example": "3275062009921981",
             "minLength": 5,
-            "maxLength": 20
+            "maxLength": 20,
+            "example": "3275062309928971"
           }
         }
       },
@@ -2447,268 +2522,26 @@
           }
         }
       },
-      "UserAuthorisedSignatory": {
-        "type": "object",
-        "required": [
-          "firstName",
-          "lastName",
-          "birthDate",
-          "email",
-          "motherMaidenName",
-          "maritalStatus",
-          "gender",
-          "title",
-          "domicile",
-          "religion",
-          "job",
-          "education",
-          "address",
-          "mobileNumber",
-          "bankAccount",
-          "documents"
-        ],
-        "description": "Authorised Signatory",
-        "properties": {
-          "firstName": {
-            "type": "string",
-            "example": "Hari",
-            "minLength": 3,
-            "maxLength": 30,
-            "description": "First name of authorised signatory"
-          },
-          "lastName": {
-            "type": "string",
-            "example": "Raya",
-            "minLength": 3,
-            "maxLength": 30,
-            "description": "Last name of authorised signatory"
-          },
-          "birthDate": {
-            "type": "string",
-            "example": "1995-11-01",
-            "format": "date",
-            "minLength": 10
-          },
-          "birthPlace": {
-            "type": "string",
-            "example": "Jakarta",
-            "minLength": 3,
-            "maxLength": 30
-          },
-          "email": {
-            "type": "string",
-            "example": "hari.raya.siapa@gmail.com",
-            "format": "email",
-            "description": "Email address of authorised signatory",
-            "minLength": 5,
-            "maxLength": 64
-          },
-          "motherMaidenNameName": {
-            "type": "string",
-            "description": "Mother maiden name of authorised signatory",
-            "minLength": 3,
-            "maxLength": 30
-          },
-          "maritalStatus": {
-            "type": "string",
-            "enum": [
-              "SINGLE",
-              "MARRIED",
-              "WIDOWER",
-              "WIDOW"
-            ],
-            "minLength": 5,
-            "maxLength": 10
-          },
-          "gender": {
-            "type": "string",
-            "enum": [
-              "MALE",
-              "FEMALE"
-            ],
-            "minLength": 4,
-            "maxLength": 6
-          },
-          "title": {
-            "type": "string",
-            "enum": [
-              "BPK",
-              "IBU",
-              "SDR",
-              "SDRI"
-            ],
-            "minLength": 3,
-            "maxLength": 4
-          },
-          "domicile": {
-            "$ref": "#/components/schemas/CountryCode"
-          },
-          "religion": {
-            "type": "string",
-            "enum": [
-              "ISLAM",
-              "CHRISTIAN",
-              "CATHOLIC",
-              "BUDDHIST",
-              "HINDU",
-              "CONFUCIAN",
-              "OTHER"
-            ],
-            "minLength": 5,
-            "maxLength": 15
-          },
-          "job": {
-            "type": "string",
-            "enum": [
-              "PRIVATE_SECTOR_EMPLOYEE",
-              "STATE_OWNED_ENTERPRISE_EMPLOYEE",
-              "NATIONAL_MILITARY_OR_POLICE_OFFICER",
-              "BUSINESS_OWNER",
-              "TRADER",
-              "FARMER_OR_FISHERMAN",
-              "STUDENT",
-              "HOUSEWIFE",
-              "UNEMPLOYED",
-              "EMPLOYEE",
-              "ENTREPRENEUR",
-              "STATE_OFFICIAL",
-              "ACCOUNTANT",
-              "LAWYER_OR_NOTARY",
-              "PROFESSION",
-              "RETIREE",
-              "PRIVATE_LECTURER_OR_TEACHER",
-              "PUBLIC_LECTURER_OR_TEACHER",
-              "DOCTOR",
-              "BNI_EMPLOYEE",
-              "BNI_AFFILIATE_UNIT",
-              "GOVERNMENT_EMPLOYEE",
-              "OTHER"
-            ],
-            "minLength": 5,
-            "maxLength": 35
-          },
-          "education": {
-            "type": "string",
-            "enum": [
-              "ELEMENTARY_SCHOOL",
-              "JUNIOR_HIGH_SCHOOL",
-              "HIGH_SCHOOL_OR_EQUIVALENT",
-              "ACADEMY_OR_DIPLOMA",
-              "BACHELORS_DEGREE",
-              "MASTERS_DEGREE",
-              "PHD"
-            ],
-            "minLength": 3,
-            "maxLength": 25
-          },
-          "address": {
-            "allOf": [
-              {
-                "$ref": "#/components/schemas/Address"
-              },
-              {
-                "$ref": "#/components/schemas/AddressPostalCode"
-              }
-            ]
-          },
-          "mobileNumber": {
-            "type": "string",
-            "description": "Mobile number of the authorised signatory in E.164 format",
-            "pattern": "^\\+62\\d{1,14}$",
-            "example": "+6281278237271",
-            "minLength": 9,
-            "maxLength": 20
-          },
-          "bankAccount": {
-            "$ref": "#/components/schemas/UserBankAccount"
-          },
-          "documents": {
-            "type": "object",
-            "required": [
-              "ktp",
-              "selfie",
-              "npwp"
-            ],
-            "properties": {
-              "ktp": {
-                "type": "object",
-                "required": [
-                  "number",
-                  "file",
-                  "issuingCity",
-                  "expiryDate"
-                ],
-                "properties": {
-                  "number": {
-                    "type": "string",
-                    "example": "3275062009921981",
-                    "minLength": 16,
-                    "maxLength": 16
-                  },
-                  "file": {
-                    "type": "string",
-                    "example": "6544dff98f002963846527e6",
-                    "description": "The id of KTP document",
-                    "pattern": "^[a-f\\d]{24}$",
-                    "minLength": 5
-                  },
-                  "issuingCity": {
-                    "type": "string",
-                    "minLength": 3,
-                    "maxLength": 30,
-                    "example": "Wamena"
-                  },
-                  "expiryDate": {
-                    "type": "string",
-                    "example": "2099-11-01",
-                    "format": "date",
-                    "minLength": 10,
-                    "maxLength": 10
-                  }
-                }
-              },
-              "selfie": {
-                "type": "object",
-                "required": [
-                  "file"
-                ],
-                "properties": {
-                  "file": {
-                    "type": "string",
-                    "example": "6544dff98f002963887537a9",
-                    "description": "The id of selfie document",
-                    "pattern": "^[a-f\\d]{24}$",
-                    "minLength": 5
-                  }
-                }
-              },
-              "npwp": {
-                "type": "object",
-                "required": [
-                  "number"
-                ],
-                "properties": {
-                  "number": {
-                    "type": "string",
-                    "example": "820007959044000",
-                    "minLength": 15,
-                    "maxLength": 16
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
       "UserEntity": {
         "type": "object",
         "description": "User entity required if user.type is BUSINESS",
+        "required": [
+          "name",
+          "npwp",
+          "email",
+          "legalEntity",
+          "address",
+          "establishmentDate",
+          "industry",
+          "nationality",
+          "managements"
+        ],
         "properties": {
           "name": {
             "type": "string",
-            "example": "PT Mencari Cinta Sejati",
-            "minLength": 5,
-            "maxLength": 50
+            "minLength": 3,
+            "maxLength": 60,
+            "example": "company name"
           },
           "address": {
             "allOf": [
@@ -2723,25 +2556,25 @@
           "phoneNumber": {
             "type": "string",
             "description": "phone number in E.164 format",
-            "example": "+6287711998822",
             "pattern": "^\\+62\\d{1,14}$",
-            "minLength": 10,
-            "maxLength": 16
+            "minLength": 5,
+            "maxLength": 20,
+            "example": "+6287711998822"
           },
           "fax": {
             "type": "string",
             "description": "Entity phone number in E.164 format",
-            "example": "+62215647888",
             "pattern": "^\\+62\\d{1,14}$",
-            "minLength": 10,
-            "maxLength": 16
+            "minLength": 3,
+            "maxLength": 20,
+            "example": "+622133442233"
           },
           "email": {
             "type": "string",
             "format": "email",
             "description": "Email address of authorised signatory",
-            "minLength": 5,
-            "maxLength": 64
+            "minLength": 6,
+            "maxLength": 128
           },
           "businessType": {
             "$ref": "#/components/schemas/UserBusinessTypeCommonEnum"
@@ -2757,17 +2590,25 @@
           },
           "npwp": {
             "type": "string",
-            "example": "820007959044000",
-            "minLength": 16,
-            "maxLength": 16
+            "minLength": 15,
+            "maxLength": 16,
+            "example": "081785542123321"
           },
           "phoneExt": {
             "type": "string",
-            "example": "4"
+            "description": "optional",
+            "example": "+6285633122"
           },
           "legalEntity": {
             "type": "string",
-            "example": "PT"
+            "example": "PT",
+            "enum": [
+              "PT",
+              "CV",
+              "UD",
+              "FIRM",
+              "OTHER"
+            ]
           },
           "establishmentDate": {
             "type": "string",
@@ -2779,45 +2620,183 @@
           }
         }
       },
-      "ProvinceEnum": {
-        "type": "string",
-        "enum": [
-          "JAWA_BARAT",
-          "BANTEN",
-          "DKI_JAKARTA",
-          "DI_YOGYAKARTA",
-          "JAWA_TENGAH",
-          "JAWA_TIMUR",
-          "BENGKULU",
-          "JAMBI",
-          "NANGROE_ACEH_DARUSSALAM",
-          "SUMATERA_UTARA",
-          "SUMATERA_BARAT",
-          "RIAU",
-          "SUMATERA_SELATAN",
-          "KEPULAUAN_BANGKA_BELITUNG",
-          "LAMPUNG",
-          "KALIMANTAN_SELATAN",
-          "KALIMANTAN_BARAT",
-          "KALIMANTAN_TIMUR",
-          "KALIMANTAN_TENGAH",
-          "SULAWESI_TENGAH",
-          "SULAWESI_SELATAN",
-          "SULAWESI_UTARA",
-          "GORONTALO",
-          "SULAWESI_TENGGARA",
-          "NUSA_TENGGARA_BARAT",
-          "BALI",
-          "NUSA_TENGGARA_TIMUR",
-          "MALUKU",
-          "MALUKU_UTARA",
-          "KEPULAUAN_RIAU",
-          "SULAWESI_BARAT",
-          "PAPUA_BARAT",
-          "PAPUA",
-          "KALIMANTAN_UTARA",
-          "OTHER"
-        ]
+      "UserAuthorisedSignatory": {
+        "type": "object",
+        "required": [
+          "firstName",
+          "birthDate",
+          "birthPlace",
+          "email",
+          "motherMaidenName",
+          "maritalStatus",
+          "title",
+          "domicile",
+          "religion",
+          "gender",
+          "job",
+          "education",
+          "address",
+          "mobileNumber",
+          "bankAccount",
+          "documents"
+        ],
+        "description": "Authorised Signatory",
+        "properties": {
+          "firstName": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 30,
+            "description": "First name of authorised signatory",
+            "example": "jhon"
+          },
+          "lastName": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 30,
+            "example": "doe",
+            "description": "Last name of authorised signatory"
+          },
+          "birthDate": {
+            "type": "string",
+            "example": "1995-11-01",
+            "format": "date",
+            "minLength": 10
+          },
+          "birthPlace": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 30,
+            "example": "Kab. Semarang"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "Email address of authorised signatory",
+            "minLength": 5,
+            "maxLength": 64
+          },
+          "motherMaidenName": {
+            "type": "string",
+            "description": "Mother maiden name of authorised signatory",
+            "minLength": 2,
+            "maxLength": 30,
+            "example": "sri ratu"
+          },
+          "maritalStatus": {
+            "$ref": "#/components/schemas/MaritalEnum"
+          },
+          "gender": {
+            "$ref": "#/components/schemas/GenderEnum"
+          },
+          "title": {
+            "$ref": "#/components/schemas/TitleEnum"
+          },
+          "domicile": {
+            "$ref": "#/components/schemas/CountryCode"
+          },
+          "religion": {
+            "$ref": "#/components/schemas/ReligionEnum"
+          },
+          "job": {
+            "$ref": "#/components/schemas/JobEnum"
+          },
+          "education": {
+            "$ref": "#/components/schemas/EducationEnum"
+          },
+          "address": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Address"
+              },
+              {
+                "$ref": "#/components/schemas/AddressPostalCode"
+              },
+              {
+                "$ref": "#/components/schemas/AddressCountry"
+              }
+            ]
+          },
+          "mobileNumber": {
+            "type": "string",
+            "description": "Mobile number of the authorised signatory in E.164 format",
+            "pattern": "^\\+62\\d{1,14}$",
+            "minLength": 5,
+            "maxLength": 20,
+            "example": "+6281274384381"
+          },
+          "bankAccount": {
+            "$ref": "#/components/schemas/UserBankAccount"
+          },
+          "documents": {
+            "type": "object",
+            "required": [
+              "ktp",
+              "npwp"
+            ],
+            "properties": {
+              "ktp": {
+                "type": "object",
+                "required": [
+                  "number",
+                  "issuingCity",
+                  "expiryDate"
+                ],
+                "properties": {
+                  "number": {
+                    "type": "string",
+                    "minLength": 16,
+                    "maxLength": 16,
+                    "example": "3275062009921981"
+                  },
+                  "file": {
+                    "type": "string",
+                    "description": "The id of KTP document",
+                    "pattern": "^[a-f\\d]{24}$",
+                    "minLength": 5
+                  },
+                  "issuingCity": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 30,
+                    "example": "Semarang"
+                  },
+                  "expiryDate": {
+                    "type": "string",
+                    "example": "2099-11-01",
+                    "format": "date",
+                    "minLength": 10,
+                    "maxLength": 10
+                  }
+                }
+              },
+              "selfie": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "description": "The id of selfie document",
+                    "pattern": "^[a-f\\d]{24}$",
+                    "minLength": 5
+                  }
+                }
+              },
+              "npwp": {
+                "type": "object",
+                "required": [
+                  "number"
+                ],
+                "properties": {
+                  "number": {
+                    "type": "string",
+                    "minLength": 15,
+                    "maxLength": 16,
+                    "example": "081785542123321"
+                  }
+                }
+              }
+            }
+          }
+        }
       },
       "FtmCreateCallback": {
         "type": "object",
