@@ -40,7 +40,7 @@ tags:
       Please ensure that the appropriate enumeration is provided when initiating processes, as each borrower type is subject to a different procedural workflow. Accurate enumeration is critical to ensure compliance with our tailored service protocols.
   - name: Credit Score
     description: |
-      here link of flow:  [link](https://kroki.io/mermaid/svg/eNp1kMGKAjEMhu8-RS7C7GEYHD25ILirB2-C-wLdTnQK2tY0VYR5eMfWtVvRHkpLvj8h346EbeFn8TmA_sw9t6hZScHK6CL_fgRkOIQvQ2TOSMXfAzYoE7HUjTVK86iohFWVNISVd0guL9f_yls-RCTc5QlJbS_hvWry1Ph9yj0mPYcmMRRZSdgoLlvl2NAlgmtBrPs9ynLWbRgtjKaw0tYzfPf0TYHYu-5JzwtjqUE9hTUZic7dWghGkL4feEDqkqBcVwjH1eH3bjbBdS4vwDJ0rgiPHh1D3AyChxQc5_5CcIcP-u4h8ZPBFcSHtTM)
+      Here [link](https://kroki.io/mermaid/svg/eNp1kMGKAjEMhu8-RS7C7GEYHD25ILirB2-C-wLdTnQK2tY0VYR5eMfWtVvRHkpLvj8h346EbeFn8TmA_sw9t6hZScHK6CL_fgRkOIQvQ2TOSMXfAzYoE7HUjTVK86iohFWVNISVd0guL9f_yls-RCTc5QlJbS_hvWry1Ph9yj0mPYcmMRRZSdgoLlvl2NAlgmtBrPs9ynLWbRgtjKaw0tYzfPf0TYHYu-5JzwtjqUE9hTUZic7dWghGkL4feEDqkqBcVwjH1eH3bjbBdS4vwDJ0rgiPHh1D3AyChxQc5_5CcIcP-u4h8ZPBFcSHtTM) for the flow
       - The first step on Authentication  - input the credential
       - Second Goes to Borrower section - Process the Endpoint `{ /api/core/users } `
       - on Callback Section - Process the Endpoint `{ api/core/ftm/users/user-verify / {userId} }`
