@@ -38,6 +38,17 @@ tags:
       - For an individual borrower: `PERSONAL`
       - For a business entity borrower: `BUSINESS`
       Please ensure that the appropriate enumeration is provided when initiating processes, as each borrower type is subject to a different procedural workflow. Accurate enumeration is critical to ensure compliance with our tailored service protocols.
+  - name: Credit Score
+    description: |
+      here link of flow:  [link](https://kroki.io/mermaid/svg/eNp1kM-KwjAQh-8-xVyE7qEUqycFwf1z8Ca4L5BNRxuwSXYy2UXow29NXGOK5hAm5PtNMt-RhG3h8301gWFtPLeoWUnByugiP74EZDqFV0NkfpGK_wL2KBPxoRtrlOZZUQmrKmkIK--QXH5d310fuItI2MsfJHU4h3rb5Kn585S7vTQOLWIospKwUVy2yrGhMxiC0TdHRGy1E8R6mLQs1_2e0cJsCVttPcPbQF8kiZPrRwIfOE0N6iXsyEh07tJCMIL0w4MdUp8U5kJDOMqBr6v7BNe53gDL0Lki_PboGOJkEEyl4Dw3HIJHvNFXD4lfTP4Ay-XB3w)
+      - The first step on Authentication  - input the credential
+      - Second Goes to Borrower section - Process the Endpoint `{ /api/core/users } `
+      - on Callback Section - Process the Endpoint `{ api/core/ftm/users/user-verify / {userId} }`
+      - on Callback Section - Process the Endpoint `{ api/core/ftm/users/user-score / {userId} }`
+      
+      
+      take a notes on endpoint /api/core/ftm/users/{endpointKey}/{userId}
+      we can change the enum into : “ user-verify ” or “ user-score ”
   - name: Finfra Loan Services
     description: |
       -
@@ -418,9 +429,9 @@ paths:
 
   /api/core/ftm/users/{endpointKey}/{userId}:
     post:
-      summary: verify and score borrower
+      summary: partner need to be verified and credit score obtained before creating a loan or getting a credit score list
       tags:
-        - Callback
+        - Credit Score
       parameters:
         - $ref: '#/components/parameters/userId'
         - $ref: '#/components/parameters/endpointKey'
@@ -588,6 +599,109 @@ components:
         swiftCode:
           type: string
           example: 'BMRIIDJA'
+          enum:
+            - JAJSIDJ1
+            - PDJTIDJ1
+            - MEDHIDS1
+            - MUABIDJA
+            - BMSEIDJA
+            - LFIBIDJ1
+            - NUPAIDJ6
+            - IDMOIDJ1
+            - SBJKIDJA
+            - PDBKIDJ1
+            - SYYKIDJ1
+            - PDJGIDJ1
+            - SYJTIDJ1
+            - PDKBIDJ1
+            - SYKBIDJ1
+            - PDKSIDJ1
+            - PDKGIDJ1
+            - SYKTIDJ1
+            - PDLPIDJ1
+            - PDNTIDJ1
+            - PDIJIDJ1
+            - PDRIIDJA
+            - PDWGIDJ1
+            - PDWRIDJ1
+            - SYWSIDJ1
+            - PDWUIDJ1
+            - PDSBIDSP
+            - BSSPIDSP
+            - PDSUIDJ1
+            - SYSUIDJ1
+            - BTANIDJA
+            - SYBTIDJ1
+            - CNBAIDJ1
+            - CITIIDJX
+            - DBSBIDJA
+            - IBKOIDJA
+            - MGABIDJ1
+            - MHCCIDJA
+            - SIHBIDJ1
+            - SYNIIDJ1
+            - PDACIDJ1
+            - BNIAIDJA
+            - BDINIDJA
+            - GNESIDJA
+            - HNBNIDJA
+            - BMRIIDJA
+            - MASDIDJ1
+            - BNINIDJA
+            - MAYOIDJA
+            - BKCHIDJA
+            - ROYBIDJ1
+            - VICTIDJ1
+            - HVBKIDJA
+            - EKSTIDJ1
+            - PDNBIDJ1
+            - FAMAIDJ1
+            - ARNKIDJ1
+            - BUSTIDJ1
+            - PUBAIDJ1
+            - BCIAIDJA
+            - SYJBIDJ1
+            - CTCBIDJA
+            - BICNIDJA
+            - BIDXIDJA
+            - AGTBIDJA
+            - MAYAIDJA
+            - MEGAIDJA
+            - BNPAIDJA
+            - BOTKIDJX
+            - LPEIIDJ1
+            - CHASIDJX
+            - HSBCIDJA
+            - ICBKIDJA
+            - AWANIDJA
+            - IBBKIDJA
+            - SYSBIDJ1
+            - NISPIDJA
+            - ARFAIDJ1
+            - EKONIDJA
+            - MEEKIDJ1
+            - SYACIDJ1
+            - RABOIDJA
+            - SCBLIDJX
+            - SDOBIDJ1
+            - BUTGIDJ1
+            - BBIJIDJA
+            - BDKIIDJA
+            - CENAIDJA
+            - PDWSIDJ1
+            - ATOSIDJ1
+            - YUDBIDJ1
+            - KSEBIDJ1
+            - HRDAIDJ1
+            - AGSSIDJA
+            - SYJMIDJ1
+            - BTPNIDJA
+            - BSMDIDJA
+            - BPIAIDJA
+            - ABNAIDJA
+            - DJARIDJ1
+            - MBBEIDJA
+            - RIPAIDJ1
         status:
           type: string
           example: 'CREATED'
@@ -629,6 +743,109 @@ components:
           example: 'BMRIIDJA'
           minLength: 3
           maxLength: 10
+          enum:
+            - JAJSIDJ1
+            - PDJTIDJ1
+            - MEDHIDS1
+            - MUABIDJA
+            - BMSEIDJA
+            - LFIBIDJ1
+            - NUPAIDJ6
+            - IDMOIDJ1
+            - SBJKIDJA
+            - PDBKIDJ1
+            - SYYKIDJ1
+            - PDJGIDJ1
+            - SYJTIDJ1
+            - PDKBIDJ1
+            - SYKBIDJ1
+            - PDKSIDJ1
+            - PDKGIDJ1
+            - SYKTIDJ1
+            - PDLPIDJ1
+            - PDNTIDJ1
+            - PDIJIDJ1
+            - PDRIIDJA
+            - PDWGIDJ1
+            - PDWRIDJ1
+            - SYWSIDJ1
+            - PDWUIDJ1
+            - PDSBIDSP
+            - BSSPIDSP
+            - PDSUIDJ1
+            - SYSUIDJ1
+            - BTANIDJA
+            - SYBTIDJ1
+            - CNBAIDJ1
+            - CITIIDJX
+            - DBSBIDJA
+            - IBKOIDJA
+            - MGABIDJ1
+            - MHCCIDJA
+            - SIHBIDJ1
+            - SYNIIDJ1
+            - PDACIDJ1
+            - BNIAIDJA
+            - BDINIDJA
+            - GNESIDJA
+            - HNBNIDJA
+            - BMRIIDJA
+            - MASDIDJ1
+            - BNINIDJA
+            - MAYOIDJA
+            - BKCHIDJA
+            - ROYBIDJ1
+            - VICTIDJ1
+            - HVBKIDJA
+            - EKSTIDJ1
+            - PDNBIDJ1
+            - FAMAIDJ1
+            - ARNKIDJ1
+            - BUSTIDJ1
+            - PUBAIDJ1
+            - BCIAIDJA
+            - SYJBIDJ1
+            - CTCBIDJA
+            - BICNIDJA
+            - BIDXIDJA
+            - AGTBIDJA
+            - MAYAIDJA
+            - MEGAIDJA
+            - BNPAIDJA
+            - BOTKIDJX
+            - LPEIIDJ1
+            - CHASIDJX
+            - HSBCIDJA
+            - ICBKIDJA
+            - AWANIDJA
+            - IBBKIDJA
+            - SYSBIDJ1
+            - NISPIDJA
+            - ARFAIDJ1
+            - EKONIDJA
+            - MEEKIDJ1
+            - SYACIDJ1
+            - RABOIDJA
+            - SCBLIDJX
+            - SDOBIDJ1
+            - BUTGIDJ1
+            - BBIJIDJA
+            - BDKIIDJA
+            - CENAIDJA
+            - PDWSIDJ1
+            - ATOSIDJ1
+            - YUDBIDJ1
+            - KSEBIDJ1
+            - HRDAIDJ1
+            - AGSSIDJA
+            - SYJMIDJ1
+            - BTPNIDJA
+            - BSMDIDJA
+            - BPIAIDJA
+            - ABNAIDJA
+            - DJARIDJ1
+            - MBBEIDJA
+            - RIPAIDJ1
 
     Loan:
       type: object
@@ -1194,16 +1411,16 @@ components:
           $ref: '#/components/schemas/ProvinceList'
         city:
           type: string
-          description: 'Address city'
-          example: 'string of city'
+          description: '[list of city](https://docs.google.com/spreadsheets/d/1gL-cOM1z36AK-XWl-Exk_9F3Vm8nhZVAA25Sxb5hm5c/edit?usp=sharing)'
+          example: 'DEPOK'
         district:
           type: string
-          description: 'Address district'
-          example: 'string of district'
+          description: '[list of district](https://docs.google.com/spreadsheets/d/1gL-cOM1z36AK-XWl-Exk_9F3Vm8nhZVAA25Sxb5hm5c/edit?usp=sharing)'
+          example: 'SUKMAJAYA'
         village:
           type: string
-          description: 'Address village'
-          example: 'string of village'
+          description: '[list of village](https://docs.google.com/spreadsheets/d/1gL-cOM1z36AK-XWl-Exk_9F3Vm8nhZVAA25Sxb5hm5c/edit?usp=sharing)'
+          example: 'ABADIJAYA'
     AddressPostalCode:
       type: object
       properties:
