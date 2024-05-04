@@ -1432,8 +1432,7 @@
         "type": "object",
         "required": [
           "file",
-          "type",
-          "reference_id"
+          "type"
         ],
         "properties": {
           "file": {
@@ -1441,7 +1440,19 @@
             "format": "binary"
           },
           "type": {
-            "type": "string"
+            "type": "string",
+            "description": "enum:\n- KTP\n- SELFIE\n- NPWP\n- NPWP_COMPANY\n- LOAN_AGREEMENT\n- INVOICE_FINANCING\n- CREDIT_HISTORY\n- TRANSACTION_HISTORY\n- OTHER\n",
+            "enum": [
+              "KTP",
+              "SELFIE",
+              "NPWP",
+              "NPWP_COMPANY",
+              "LOAN_AGREEMENT",
+              "INVOICE_FINANCING",
+              "CREDIT_HISTORY",
+              "TRANSACTION_HISTORY",
+              "OTHER"
+            ]
           },
           "reference_id": {
             "type": "string"

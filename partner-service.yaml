@@ -1019,13 +1019,33 @@ components:
       required:
         - file
         - type
-        - reference_id
       properties:
         file:
           type: string
           format: binary
         type:
           type: string
+          description: |
+            enum:
+            - KTP
+            - SELFIE
+            - NPWP
+            - NPWP_COMPANY
+            - LOAN_AGREEMENT
+            - INVOICE_FINANCING
+            - CREDIT_HISTORY
+            - TRANSACTION_HISTORY
+            - OTHER
+          enum:
+            - KTP
+            - SELFIE
+            - NPWP
+            - NPWP_COMPANY
+            - LOAN_AGREEMENT
+            - INVOICE_FINANCING
+            - CREDIT_HISTORY
+            - TRANSACTION_HISTORY
+            - OTHER
         reference_id:
           type: string
         description:
