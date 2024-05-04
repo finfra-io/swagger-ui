@@ -200,6 +200,21 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error500Response'
   /api/core/users/{userId}:
+    get:
+      security:
+        - BearerAuth: []
+      tags:
+        - Borrower
+      operationId: getSinglePartnerUsers
+      parameters:
+        - $ref: '#/components/parameters/userId'
+      responses:
+        200:
+          description: A borrower
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
     patch:
       security:
         - BearerAuth: []
@@ -209,6 +224,12 @@ paths:
       summary: Update single partner borrower
       parameters:
         - $ref: '#/components/parameters/userId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
       responses:
         200:
           description: Success update borrower
@@ -711,14 +732,14 @@ components:
             - APPROVED_BY_PARTNER
             - BLOCKED
             - INACTIVE
+        verify:
+          type: boolean
         createdAt:
           type: string
           example: '2023-09-04T06:19:06.525+0000'
         updatedAt:
           type: string
           example: '2023-09-04T06:19:06.525+0000'
-        rdf:
-          $ref: '#/components/schemas/UserRdf'
 
     CreateUserRequest:
       type: object
@@ -739,113 +760,8 @@ components:
         authorisedSignatory:
           $ref: '#/components/schemas/UserAuthorisedSignatory'
         swiftCode:
-          type: string
-          example: 'BMRIIDJA'
-          minLength: 3
-          maxLength: 10
-          enum:
-            - JAJSIDJ1
-            - PDJTIDJ1
-            - MEDHIDS1
-            - MUABIDJA
-            - BMSEIDJA
-            - LFIBIDJ1
-            - NUPAIDJ6
-            - IDMOIDJ1
-            - SBJKIDJA
-            - PDBKIDJ1
-            - SYYKIDJ1
-            - PDJGIDJ1
-            - SYJTIDJ1
-            - PDKBIDJ1
-            - SYKBIDJ1
-            - PDKSIDJ1
-            - PDKGIDJ1
-            - SYKTIDJ1
-            - PDLPIDJ1
-            - PDNTIDJ1
-            - PDIJIDJ1
-            - PDRIIDJA
-            - PDWGIDJ1
-            - PDWRIDJ1
-            - SYWSIDJ1
-            - PDWUIDJ1
-            - PDSBIDSP
-            - BSSPIDSP
-            - PDSUIDJ1
-            - SYSUIDJ1
-            - BTANIDJA
-            - SYBTIDJ1
-            - CNBAIDJ1
-            - CITIIDJX
-            - DBSBIDJA
-            - IBKOIDJA
-            - MGABIDJ1
-            - MHCCIDJA
-            - SIHBIDJ1
-            - SYNIIDJ1
-            - PDACIDJ1
-            - BNIAIDJA
-            - BDINIDJA
-            - GNESIDJA
-            - HNBNIDJA
-            - BMRIIDJA
-            - MASDIDJ1
-            - BNINIDJA
-            - MAYOIDJA
-            - BKCHIDJA
-            - ROYBIDJ1
-            - VICTIDJ1
-            - HVBKIDJA
-            - EKSTIDJ1
-            - PDNBIDJ1
-            - FAMAIDJ1
-            - ARNKIDJ1
-            - BUSTIDJ1
-            - PUBAIDJ1
-            - BCIAIDJA
-            - SYJBIDJ1
-            - CTCBIDJA
-            - BICNIDJA
-            - BIDXIDJA
-            - AGTBIDJA
-            - MAYAIDJA
-            - MEGAIDJA
-            - BNPAIDJA
-            - BOTKIDJX
-            - LPEIIDJ1
-            - CHASIDJX
-            - HSBCIDJA
-            - ICBKIDJA
-            - AWANIDJA
-            - IBBKIDJA
-            - SYSBIDJ1
-            - NISPIDJA
-            - ARFAIDJ1
-            - EKONIDJA
-            - MEEKIDJ1
-            - SYACIDJ1
-            - RABOIDJA
-            - SCBLIDJX
-            - SDOBIDJ1
-            - BUTGIDJ1
-            - BBIJIDJA
-            - BDKIIDJA
-            - CENAIDJA
-            - PDWSIDJ1
-            - ATOSIDJ1
-            - YUDBIDJ1
-            - KSEBIDJ1
-            - HRDAIDJ1
-            - AGSSIDJA
-            - SYJMIDJ1
-            - BTPNIDJA
-            - BSMDIDJA
-            - BPIAIDJA
-            - ABNAIDJA
-            - DJARIDJ1
-            - MBBEIDJA
-            - RIPAIDJ1
+          $ref: '#/components/schemas/UserSwiftCode'
+          
 
     Loan:
       type: object
@@ -1019,13 +935,33 @@ components:
       required:
         - file
         - type
-        - reference_id
       properties:
         file:
           type: string
           format: binary
         type:
           type: string
+          description: |
+            enum:
+            - KTP
+            - SELFIE
+            - NPWP
+            - NPWP_COMPANY
+            - LOAN_AGREEMENT
+            - INVOICE_FINANCING
+            - CREDIT_HISTORY
+            - TRANSACTION_HISTORY
+            - OTHER
+          enum:
+            - KTP
+            - SELFIE
+            - NPWP
+            - NPWP_COMPANY
+            - LOAN_AGREEMENT
+            - INVOICE_FINANCING
+            - CREDIT_HISTORY
+            - TRANSACTION_HISTORY
+            - OTHER
         reference_id:
           type: string
         description:
@@ -1390,6 +1326,12 @@ components:
               type: string
     Address:
       type: object
+      required:
+        - streetAddress
+        - province
+        - city
+        - district
+        - village
       properties:
         streetAddress:
           type: string
@@ -1423,6 +1365,8 @@ components:
           example: 'ABADIJAYA'
     AddressPostalCode:
       type: object
+      required:
+        - postalCode
       properties:
         postalCode:
           type: string
@@ -1432,6 +1376,8 @@ components:
           maxLength: 5
     AddressCountry:
       type: object
+      required:
+        - country
       properties:
         country:
           type: string
@@ -1732,6 +1678,11 @@ components:
     
     MaritalEnum:
       type: string
+      description: |
+        - SINGLE
+        - MARRIED
+        - WIDOWER
+        - WIDOW
       enum:
         - SINGLE
         - MARRIED
@@ -1748,6 +1699,11 @@ components:
       maxLength: 6
     TitleEnum:
       type: string
+      description: |
+        - BPK
+        - IBU
+        - SDR
+        - SDRI
       enum:
         - BPK
         - IBU
@@ -1757,6 +1713,14 @@ components:
       maxLength: 4
     ReligionEnum:
       type: string
+      description: |
+        - ISLAM
+        - CHRISTIAN
+        - CATHOLIC
+        - BUDDHIST
+        - HINDU
+        - CONFUCIAN
+        - OTHER
       enum:
         - ISLAM
         - CHRISTIAN
@@ -1769,6 +1733,40 @@ components:
       maxLength: 15
     JobEnum:
       type: string
+      description: |
+        - PRIVATE_SECTOR_EMPLOYEE
+        - STATE_OWNED_ENTERPRISE_EMPLOYEE
+        - NATIONAL_MILITARY_OR_POLICE_OFFICER
+        - BUSINESS_OWNER
+        - TRADER
+        - FARMER_OR_FISHERMAN
+        - STUDENT
+        - HOUSEWIFE
+        - UNEMPLOYED
+        - EMPLOYEE
+        - ENTREPRENEUR
+        - STATE_OFFICIAL
+        - ACCOUNTANT
+        - LAWYER_OR_NOTARY
+        - PROFESSION
+        - RETIREE
+        - PRIVATE_LECTURER_OR_TEACHER
+        - PUBLIC_LECTURER_OR_TEACHER
+        - DOCTOR
+        - BNI_EMPLOYEE
+        - BNI_AFFILIATE_UNIT
+        - GOVERNMENT_EMPLOYEE
+        - ENGINEERING
+        - RESEARCHER
+        - MARKETING
+        - LAW
+        - BROKER
+        - CUSTOMER_SERVICES
+        - GENERAL_ADMINISTRATION
+        - IT
+        - CONSULTANT
+        - DESIGNER
+        - OTHER
       enum:
         - PRIVATE_SECTOR_EMPLOYEE
         - STATE_OWNED_ENTERPRISE_EMPLOYEE
@@ -1792,11 +1790,30 @@ components:
         - BNI_EMPLOYEE
         - BNI_AFFILIATE_UNIT
         - GOVERNMENT_EMPLOYEE
+        - ENGINEERING
+        - RESEARCHER
+        - MARKETING
+        - LAW
+        - BROKER
+        - CUSTOMER_SERVICES
+        - GENERAL_ADMINISTRATION
+        - IT
+        - CONSULTANT
+        - DESIGNER
         - OTHER
       minLength: 5
       maxLength: 35
     EducationEnum:
       type: string
+      description: |
+        - ELEMENTARY_SCHOOL
+        - JUNIOR_HIGH_SCHOOL
+        - HIGH_SCHOOL_OR_EQUIVALENT
+        - ACADEMY_OR_DIPLOMA
+        - BACHELORS_DEGREE
+        - MASTERS_DEGREE
+        - PHD
+        - OTHER
       enum:
         - ELEMENTARY_SCHOOL
         - JUNIOR_HIGH_SCHOOL
@@ -1807,7 +1824,537 @@ components:
         - PHD
       minLength: 3
       maxLength: 25
-
+    HousingStatusEnum:
+      type: string
+      description: |
+        - OWN_HOME
+        - RENT
+        - OTHER
+      enum:
+        - OWN_HOME
+        - RENT
+        - OTHER
+    IndustryEnum:
+      type: string
+      description: |
+        - AGRICULTURAL_FACILITIES_PUMPING
+        - AGRICULTURAL_FACILITIES_RICE_FIELD_PRINTING
+        - AGRICULTURAL_FACILITIES_SOIL_CULTIVATION_EQUIPMENT
+        - AGRICULTURAL_FACILITIES_WAREHOUSE_CLOTHES_FLOOR
+        - AGRICULTURE_HUNTING_FARMING_FACILITIES
+        - BASE_METAL_INDUSTRY_OTHERS
+        - BASIC_METAL_INDUSTRY_STEEL
+        - BRACKISH_FISHERY_OTHERS
+        - BRACKISH_FISHERY_SHRIMP
+        - BUSINESS_SERVICES_LEASING
+        - BUSINESS_SERVICES_OTHER_REAL_ESTATE
+        - BUSINESS_SERVICES_OTHERS
+        - BUSINESS_SERVICES_PROFESSIONS_OTHER_THAN_DOCTORS
+        - BUSINESS_SERVICES_REAL_ESTATE_INPRES_MARKET
+        - BUSINESS_WORLD_SERVICES
+        - BUSINESS_WORLD_SERVICES_PERUMNAS_SIMPLE_HOUSING
+        - BUSINESS_WORLD_SERVICES_SIMPLE_HOUSING_OTHER_THAN_PERUMNAS
+        - CATTLE_FARM
+        - CEMENT_DISTRIBUTION
+        - CLOVE_PLANTATION
+        - COAL_MINING
+        - COAL_RAW_MATERIAL_EXPORT
+        - COCOA_CHOCOLATE_PLANTATION
+        - COCONUT_PLANTATION
+        - COFFEE_PLANTATION
+        - COMMUNICATION
+        - COMPONENT_MANUFACTURING_AGRICULTURAL_TOOLS
+        - COMPONENT_MANUFACTURING_AUTOMOTIVE
+        - COMPONENT_MANUFACTURING_ELECTRONICS
+        - COMPONENT_MANUFACTURING_MARITIME
+        - CONCRETE_IRON_DISTRIBUTION
+        - CONSTRUCTION
+        - CONSTRUCTION_ANOTHER_SIMPLE_HOUSING
+        - CONSTRUCTION_BTN_SIMPLE_HOUSING
+        - CONSTRUCTION_HIGHWAYS_AND_BRIDGES
+        - CONSTRUCTION_INPRES_MARKET
+        - CONSTRUCTION_IRRIGATION
+        - CONSTRUCTION_OTHER
+        - CONSTRUCTION_OTHER_ELECTRICAL
+        - CONSTRUCTION_PERUMNAS_SIMPLE_HOUSING
+        - CONSTRUCTION_PORT
+        - CONSTRUCTION_PROJECTS_FINANCED_WITH_LOANS_FROM_FOR_OVERSEAS_PAYMENTS
+        - CONSTRUCTION_RICE_FIELD_PRINTING
+        - CONSTRUCTION_RURAL_ELECTRIC
+        - CONSTRUCTION_TRANSMIGRATION_SETTLEMENT_LAND_PREPARATION
+        - COTTON_PLANTATION
+        - DISTRIBUTION_OF_COARSE_COTTON
+        - DISTRIBUTION_OF_FERTILIZERS_PESTICIDES
+        - DISTRIBUTION_OF_NEWSPAPER_PAPERS
+        - DISTRIBUTION_OF_WHEAT_FLOUR
+        - DOMESTIC_COMPONENT_ASSEMBLY_AGRICULTURAL_TOOLS
+        - DOMESTIC_COMPONENT_ASSEMBLY_AUTOMOTIVE
+        - DOMESTIC_COMPONENT_ASSEMBLY_ELECTRONICS
+        - DOMESTIC_COMPONENT_ASSEMBLY_MARITIME
+        - ELECTRICITY_GAS_AND_WATER
+        - EXPORT_OF_COPRA_MEAL_SEMI_FINISHED_GOODS
+        - EXPORT_OF_FINISHED_ANIMAL_PRODUCTS_OTHER_THAN_SHRIMP
+        - EXPORT_OF_FINISHED_COFFEE_POWDER
+        - EXPORT_OF_FINISHED_GOODS_FROM_FOOD_CROPS_OTHER_PLANTATIONS
+        - EXPORT_OF_FINISHED_GOODS_OTHER_THAN_TEXTILES
+        - EXPORT_OF_FINISHED_HANDICRAFTS_OTHER_THAN_WOOD_AND_RATTAN
+        - EXPORT_OF_FINISHED_PLYWOOD_SIMILAR_GOODS
+        - EXPORT_OF_FINISHED_TEA
+        - EXPORT_OF_FINISHED_WOOD_AND_RATTAN_HANDICRAFTS
+        - EXPORT_OF_FOREST_RAW_MATERIALS_OTHER_THAN_WOOD_AND_RATTAN
+        - EXPORT_OF_INTERMEDIATE_GOODS_CRUDE_PALM_OIL
+        - EXPORT_OF_LIVE_ANIMAL_RAW_MATERIALS_THEIR_PRODUCTS
+        - EXPORT_OF_METAL_ORE_RAW_MATERIALS_OTHER_THAN_TIN
+        - EXPORT_OF_MINED_SEMI_FINISHED_GOODS
+        - EXPORT_OF_OTHER_FOOD_SEMI_FINISHED_GOODS
+        - EXPORT_OF_OTHER_SEMI_FINISHED_GOODS
+        - EXPORT_OF_PALM_OIL_SEMI_FINISHED_GOODS
+        - EXPORT_OF_PEPPER_SEMI_FINISHED_GOODS
+        - EXPORT_OF_PROCESSED_ANIMAL_SEMI_FINISHED_GOODS
+        - EXPORT_OF_RAW_MATERIALS_FOR_FOOD_CROPS_PLANTATION
+        - EXPORT_OF_SAWN_TIMBER_SEMI_FINISHED_GOODS
+        - EXPORT_OF_SEMI_FINISHED_GOODS_COFFEE_BEANS
+        - EXPORT_OF_SEMI_FINISHED_GOODS_PRODUCED_BY_MR_FOOD_OTHER_PLANTATIONS
+        - EXPORT_OF_SERVICES_CONSTRUCTION
+        - EXPORT_OF_TEXTILE_FINISHED_GOODS
+        - EXPORT_OF_TIN_ORE_RAW_MATERIALS
+        - EXPORT_OF_TOBACCO_SEMI_FINISHED_GOODS
+        - EXPORT_OF_WOOD_RAW_MATERIALS
+        - EXPORT_SERVICES_OTHERS
+        - FARM_FACILITIES
+        - FISHING_FACILITIES
+        - FOOD_CROPS_HORTICULTURE
+        - FOOD_CROPS_PALAWIJA_CORN
+        - FOOD_CROPS_PALAWIJA_NUTS
+        - FOOD_CROPS_PALAWIJA_OTHER
+        - FOOD_CROPS_PALAWIJA_TUBERS
+        - FOOD_CROPS_RICE
+        - FOR_2_WHEELED_MOTOR_VEHICLES
+        - FOR_4_WHEELED_MOTOR_VEHICLES
+        - FOR_MORE_THAN_4_WHEELED_MOTOR_VEHICLES
+        - FORESTRY_AND_TIMBER_CUTTING_LOGGING
+        - FORESTRY_FACILITIES
+        - GAS
+        - HOTEL
+        - HUNT
+        - IMPORT_FOR_FOREIGN_AID_KAPAS
+        - IMPORT_FOR_FOREIGN_AID_OTHERS
+        - IMPORT_FOR_FOREIGN_AID_RICE
+        - IMPORT_FOR_FOREIGN_AID_WHEAT_SEED
+        - IMPORT_FOR_FOREIGN_AID_YARN
+        - IMPORTS_NOT_FOR_FOREIGN_AID_BESI_BETON
+        - IMPORTS_NOT_FOR_FOREIGN_AID_CLOVES
+        - IMPORTS_NOT_FOR_FOREIGN_AID_CORN
+        - IMPORTS_NOT_FOR_FOREIGN_AID_INDUSTRIAL_SPARE_PARTS
+        - IMPORTS_NOT_FOR_FOREIGN_AID_NEWSPAPER
+        - IMPORTS_NOT_FOR_FOREIGN_AID_OTHERS
+        - IMPORTS_NOT_FOR_FOREIGN_AID_PHARMACY
+        - IMPORTS_NOT_FOR_FOREIGN_AID_RICE
+        - IMPORTS_NOT_FOR_FOREIGN_AID_SOYBEANS
+        - IMPORTS_NOT_FOR_FOREIGN_AID_SUGAR
+        - IMPORTS_NOT_FOR_FOREIGN_AID_WHEAT_SEEDS
+        - IMPORTS_NOT_IN_THE_CONTEXT_OF_FOREIGN_AID_FERTILIZER_AND_PEST_MEDICINE
+        - IMPORTS_NOT_IN_THE_CONTEXT_OF_FOREIGN_AID_KEND_MOTORIZED_SPARE_PARTS
+        - INDUSTRY
+        - INDUSTRY_ANIMAL_FEED_AND_FISH
+        - INDUSTRY_BEVERAGES
+        - INDUSTRY_CHEMICALS_OIL_PRODUCTS_COAL_OTHER
+        - INDUSTRY_CIGARETTES
+        - INDUSTRY_CLOTHING
+        - INDUSTRY_CRUDE_PALM_OIL
+        - INDUSTRY_CRUMB_RUBBER
+        - INDUSTRY_ESSENTIAL_OILS
+        - INDUSTRY_FERTILIZER_PEST_MEDICINE
+        - INDUSTRY_FLOUR
+        - INDUSTRY_LEATHER
+        - INDUSTRY_OTHER_CHEMICAL_PRODUCTS
+        - INDUSTRY_OTHER_FOOD
+        - INDUSTRY_OTHER_PLANT_OILS
+        - INDUSTRY_OTHER_RUBBER_PRODUCTS
+        - INDUSTRY_OTHER_WOOD
+        - INDUSTRY_OTHERS
+        - INDUSTRY_PALM_SEED_OIL
+        - INDUSTRY_PAPER_AND_PAPER_PRODUCTS
+        - INDUSTRY_PAPER_MATERIALS_PULP
+        - INDUSTRY_PLASTIC
+        - INDUSTRY_PRINTING_AND_PUBLISHING
+        - INDUSTRY_SALT
+        - INDUSTRY_SUGAR
+        - INDUSTRY_TOBACCO
+        - INDUSTRY_WOOD_MATERIAL
+        - INDUSTRY_WOODEN_FURNITURE
+        - INLAND_FISHING_OTHERS
+        - INLAND_FISHING_SHRIMP
+        - LAND_PUBLIC_TRANSPORT
+        - MARINE_FISHERIES_OTHERS
+        - MARINE_FISHING_SHRIMP
+        - METAL_ORE_MINING_OTHERS
+        - MINING
+        - MINING_METAL_ORE_TIN
+        - MINING_METAL_ORES_NICKEL
+        - MINING_ORE_BAUXITE
+        - MINING_ORE_COPPER
+        - MINING_OTHER_MINING_GOODS
+        - NON_METAL_MINING_PRODUCTS_PROCESSING_INDUSTRY_OTHER_THAN_PETROLEUM_AND_COAL_PRODUCTS_CEMENT
+        - NON_METAL_MINING_PRODUCTS_PROCESSING_INDUSTRY_OTHER_THAN_PETROLEUM_AND_COAL_PRODUCTS_CERAMICS
+        - NON_METAL_MINING_PRODUCTS_PROCESSING_INDUSTRY_OTHER_THAN_PETROLEUM_AND_COAL_PRODUCTS_OTHERS
+        - OIL_AND_GAS_MINING
+        - OIL_FUEL_DISTRIBUTION
+        - OIL_PALM_PLANTATION
+        - OTHER_COMPONENT_MANUFACTURING
+        - OTHER_DISTRIBUTIONS
+        - OTHER_DOMESTIC_COMPONENT_ASSEMBLY
+        - OTHER_ELECTRICS
+        - OTHER_FACILITIES
+        - OTHER_FARMS
+        - OTHER_FINISHED_GOODS_EXPORT
+        - OTHER_OVERSEAS_COMPONENT_ASSEMBLY
+        - OTHER_PLANTATIONS
+        - OTHER_RAW_MATERIAL_EXPORT
+        - OTHERS_HOUSEHOLD_APPLIANCES
+        - OTHERS_HOUSING
+        - OTHERS_OTHERS
+        - OTHERS_VEHICLES
+        - OVERSEAS_COMPONENT_ASSEMBLY_AGRICULTURAL_TOOLS
+        - OVERSEAS_COMPONENT_ASSEMBLY_AUTOMOTIVE
+        - OVERSEAS_COMPONENT_ASSEMBLY_ELECTRONICS
+        - OVERSEAS_MARITIME_COMPONENT_ASSEMBLY
+        - PALA_PLANTATION
+        - PALM_OIL_SEED_RAW_MATERIAL_EXPORT
+        - PEPPER_PLANTATION
+        - PHARMACEUTICAL_INDUSTRY
+        - POULTRY_FARM
+        - PROCESSING_INDUSTRY_OF_NON_METAL_MINING_PRODUCTS_OTHER_THAN_PETROLEUM_AND_COAL_PRODUCTS_BRICKS_TILE
+        - PUBLIC_AIR_TRANSPORT
+        - PURCHASE_COLLECTION_BRG_TRADE_DLM_NEG_CLOVES
+        - PURCHASE_COLLECTION_BRG_TRADE_DLM_NEG_COFFEE
+        - PURCHASE_COLLECTION_BRG_TRADE_DLM_NEG_COPRA
+        - PURCHASE_COLLECTION_BRG_TRADE_DLM_NEG_CORN
+        - PURCHASE_COLLECTION_BRG_TRADE_DLM_NEG_COTTON
+        - PURCHASE_COLLECTION_BRG_TRADE_DLM_NEG_LADA
+        - PURCHASE_COLLECTION_BRG_TRADE_DLM_NEG_LIVING_ANIMALS_THE_RESULTS
+        - PURCHASE_COLLECTION_BRG_TRADE_DLM_NEG_OTHER
+        - PURCHASE_COLLECTION_BRG_TRADE_DLM_NEG_PALM_TREE
+        - PURCHASE_COLLECTION_BRG_TRADE_DLM_NEG_RICE
+        - PURCHASE_COLLECTION_BRG_TRADE_DLM_NEG_RUBBER
+        - PURCHASE_COLLECTION_BRG_TRADE_DLM_NEG_SALT
+        - PURCHASE_COLLECTION_BRG_TRADE_DLM_NEG_SUGAR_STOCKS
+        - PURCHASE_COLLECTION_BRG_TRADE_DLM_NEG_TEH
+        - PURCHASE_COLLECTION_BRG_TRADE_DLM_NEG_TOBACCO
+        - PURCHASE_COLLECTION_BRG_TRADE_DLM_NEG_WOOD
+        - RATTAN_RAW_MATERIAL_EXPORT
+        - REMILLING_AND_SMOKEHOUSE
+        - RESTAURANT
+        - RETAIL_TRADE
+        - RICE_DISTRIBUTION
+        - RICE_MILL_HULLER
+        - RIVER_PUBLIC_TRANSPORT
+        - RUBBER_PLANTATION
+        - RUBBER_SEMI_FINISHED_GOODS_EXPORT
+        - RURAL_ELECTRIC
+        - SALT_DISTRIBUTION
+        - SEA_PUBLIC_TRANSPORT
+        - SHRIMP_FINISHED_GOODS_EXPORT
+        - SOCIAL_COMMUNITY_SERVICES
+        - SOCIAL_COMMUNITY_SERVICES_EDUCATION_HIGHER_EDUCATION
+        - SOCIAL_COMMUNITY_SERVICES_ENTERTAINMENT_AND_CULTURE
+        - SOCIAL_COMMUNITY_SERVICES_HEALTH_CARE_TREATMENT
+        - SOCIAL_COMMUNITY_SERVICES_HEALTH_PROFESSION
+        - SOCIAL_COMMUNITY_SERVICES_OTHER_EDUCATION
+        - SOCIAL_COMMUNITY_SERVICES_OTHERS
+        - SUGAR_DISTRIBUTION
+        - SUGARCANE_PLANTATION
+        - TEA_PLANTATION
+        - TEXTILE_INDUSTRY
+        - TOBACCO_PLANTATION
+        - TRADE_RESTAURANT_AND_HOTEL
+        - TRANSPORTATION_WAREHOUSING_COMMUNICATIONS
+        - TRAVEL_BUREAU
+        - VANILLA_PLANTATION
+        - WAREHOUSING
+        - WATER
+        - BANKING
+        - EDUCATION
+        - FINANCE
+        - GOVERNMENT
+        - IT
+        - LAW
+        - MANUFACTORY
+        - PLANTATION
+        - PROPERTY
+        - SERVICES
+        - STATE_OWNED_ENTERPRISES
+        - TAX
+        - TELECOMMUNICATION
+        - TOURISM
+        - TRADING
+        - TRANSPORTATION
+        - OTHER
+      enum:
+        - AGRICULTURAL_FACILITIES_PUMPING
+        - AGRICULTURAL_FACILITIES_RICE_FIELD_PRINTING
+        - AGRICULTURAL_FACILITIES_SOIL_CULTIVATION_EQUIPMENT
+        - AGRICULTURAL_FACILITIES_WAREHOUSE_CLOTHES_FLOOR
+        - AGRICULTURE_HUNTING_FARMING_FACILITIES
+        - BASE_METAL_INDUSTRY_OTHERS
+        - BASIC_METAL_INDUSTRY_STEEL
+        - BRACKISH_FISHERY_OTHERS
+        - BRACKISH_FISHERY_SHRIMP
+        - BUSINESS_SERVICES_LEASING
+        - BUSINESS_SERVICES_OTHER_REAL_ESTATE
+        - BUSINESS_SERVICES_OTHERS
+        - BUSINESS_SERVICES_PROFESSIONS_OTHER_THAN_DOCTORS
+        - BUSINESS_SERVICES_REAL_ESTATE_INPRES_MARKET
+        - BUSINESS_WORLD_SERVICES
+        - BUSINESS_WORLD_SERVICES_PERUMNAS_SIMPLE_HOUSING
+        - BUSINESS_WORLD_SERVICES_SIMPLE_HOUSING_OTHER_THAN_PERUMNAS
+        - CATTLE_FARM
+        - CEMENT_DISTRIBUTION
+        - CLOVE_PLANTATION
+        - COAL_MINING
+        - COAL_RAW_MATERIAL_EXPORT
+        - COCOA_CHOCOLATE_PLANTATION
+        - COCONUT_PLANTATION
+        - COFFEE_PLANTATION
+        - COMMUNICATION
+        - COMPONENT_MANUFACTURING_AGRICULTURAL_TOOLS
+        - COMPONENT_MANUFACTURING_AUTOMOTIVE
+        - COMPONENT_MANUFACTURING_ELECTRONICS
+        - COMPONENT_MANUFACTURING_MARITIME
+        - CONCRETE_IRON_DISTRIBUTION
+        - CONSTRUCTION
+        - CONSTRUCTION_ANOTHER_SIMPLE_HOUSING
+        - CONSTRUCTION_BTN_SIMPLE_HOUSING
+        - CONSTRUCTION_HIGHWAYS_AND_BRIDGES
+        - CONSTRUCTION_INPRES_MARKET
+        - CONSTRUCTION_IRRIGATION
+        - CONSTRUCTION_OTHER
+        - CONSTRUCTION_OTHER_ELECTRICAL
+        - CONSTRUCTION_PERUMNAS_SIMPLE_HOUSING
+        - CONSTRUCTION_PORT
+        - CONSTRUCTION_PROJECTS_FINANCED_WITH_LOANS_FROM_FOR_OVERSEAS_PAYMENTS
+        - CONSTRUCTION_RICE_FIELD_PRINTING
+        - CONSTRUCTION_RURAL_ELECTRIC
+        - CONSTRUCTION_TRANSMIGRATION_SETTLEMENT_LAND_PREPARATION
+        - COTTON_PLANTATION
+        - DISTRIBUTION_OF_COARSE_COTTON
+        - DISTRIBUTION_OF_FERTILIZERS_PESTICIDES
+        - DISTRIBUTION_OF_NEWSPAPER_PAPERS
+        - DISTRIBUTION_OF_WHEAT_FLOUR
+        - DOMESTIC_COMPONENT_ASSEMBLY_AGRICULTURAL_TOOLS
+        - DOMESTIC_COMPONENT_ASSEMBLY_AUTOMOTIVE
+        - DOMESTIC_COMPONENT_ASSEMBLY_ELECTRONICS
+        - DOMESTIC_COMPONENT_ASSEMBLY_MARITIME
+        - ELECTRICITY_GAS_AND_WATER
+        - EXPORT_OF_COPRA_MEAL_SEMI_FINISHED_GOODS
+        - EXPORT_OF_FINISHED_ANIMAL_PRODUCTS_OTHER_THAN_SHRIMP
+        - EXPORT_OF_FINISHED_COFFEE_POWDER
+        - EXPORT_OF_FINISHED_GOODS_FROM_FOOD_CROPS_OTHER_PLANTATIONS
+        - EXPORT_OF_FINISHED_GOODS_OTHER_THAN_TEXTILES
+        - EXPORT_OF_FINISHED_HANDICRAFTS_OTHER_THAN_WOOD_AND_RATTAN
+        - EXPORT_OF_FINISHED_PLYWOOD_SIMILAR_GOODS
+        - EXPORT_OF_FINISHED_TEA
+        - EXPORT_OF_FINISHED_WOOD_AND_RATTAN_HANDICRAFTS
+        - EXPORT_OF_FOREST_RAW_MATERIALS_OTHER_THAN_WOOD_AND_RATTAN
+        - EXPORT_OF_INTERMEDIATE_GOODS_CRUDE_PALM_OIL
+        - EXPORT_OF_LIVE_ANIMAL_RAW_MATERIALS_THEIR_PRODUCTS
+        - EXPORT_OF_METAL_ORE_RAW_MATERIALS_OTHER_THAN_TIN
+        - EXPORT_OF_MINED_SEMI_FINISHED_GOODS
+        - EXPORT_OF_OTHER_FOOD_SEMI_FINISHED_GOODS
+        - EXPORT_OF_OTHER_SEMI_FINISHED_GOODS
+        - EXPORT_OF_PALM_OIL_SEMI_FINISHED_GOODS
+        - EXPORT_OF_PEPPER_SEMI_FINISHED_GOODS
+        - EXPORT_OF_PROCESSED_ANIMAL_SEMI_FINISHED_GOODS
+        - EXPORT_OF_RAW_MATERIALS_FOR_FOOD_CROPS_PLANTATION
+        - EXPORT_OF_SAWN_TIMBER_SEMI_FINISHED_GOODS
+        - EXPORT_OF_SEMI_FINISHED_GOODS_COFFEE_BEANS
+        - EXPORT_OF_SEMI_FINISHED_GOODS_PRODUCED_BY_MR_FOOD_OTHER_PLANTATIONS
+        - EXPORT_OF_SERVICES_CONSTRUCTION
+        - EXPORT_OF_TEXTILE_FINISHED_GOODS
+        - EXPORT_OF_TIN_ORE_RAW_MATERIALS
+        - EXPORT_OF_TOBACCO_SEMI_FINISHED_GOODS
+        - EXPORT_OF_WOOD_RAW_MATERIALS
+        - EXPORT_SERVICES_OTHERS
+        - FARM_FACILITIES
+        - FISHING_FACILITIES
+        - FOOD_CROPS_HORTICULTURE
+        - FOOD_CROPS_PALAWIJA_CORN
+        - FOOD_CROPS_PALAWIJA_NUTS
+        - FOOD_CROPS_PALAWIJA_OTHER
+        - FOOD_CROPS_PALAWIJA_TUBERS
+        - FOOD_CROPS_RICE
+        - FOR_2_WHEELED_MOTOR_VEHICLES
+        - FOR_4_WHEELED_MOTOR_VEHICLES
+        - FOR_MORE_THAN_4_WHEELED_MOTOR_VEHICLES
+        - FORESTRY_AND_TIMBER_CUTTING_LOGGING
+        - FORESTRY_FACILITIES
+        - GAS
+        - HOTEL
+        - HUNT
+        - IMPORT_FOR_FOREIGN_AID_KAPAS
+        - IMPORT_FOR_FOREIGN_AID_OTHERS
+        - IMPORT_FOR_FOREIGN_AID_RICE
+        - IMPORT_FOR_FOREIGN_AID_WHEAT_SEED
+        - IMPORT_FOR_FOREIGN_AID_YARN
+        - IMPORTS_NOT_FOR_FOREIGN_AID_BESI_BETON
+        - IMPORTS_NOT_FOR_FOREIGN_AID_CLOVES
+        - IMPORTS_NOT_FOR_FOREIGN_AID_CORN
+        - IMPORTS_NOT_FOR_FOREIGN_AID_INDUSTRIAL_SPARE_PARTS
+        - IMPORTS_NOT_FOR_FOREIGN_AID_NEWSPAPER
+        - IMPORTS_NOT_FOR_FOREIGN_AID_OTHERS
+        - IMPORTS_NOT_FOR_FOREIGN_AID_PHARMACY
+        - IMPORTS_NOT_FOR_FOREIGN_AID_RICE
+        - IMPORTS_NOT_FOR_FOREIGN_AID_SOYBEANS
+        - IMPORTS_NOT_FOR_FOREIGN_AID_SUGAR
+        - IMPORTS_NOT_FOR_FOREIGN_AID_WHEAT_SEEDS
+        - IMPORTS_NOT_IN_THE_CONTEXT_OF_FOREIGN_AID_FERTILIZER_AND_PEST_MEDICINE
+        - IMPORTS_NOT_IN_THE_CONTEXT_OF_FOREIGN_AID_KEND_MOTORIZED_SPARE_PARTS
+        - INDUSTRY
+        - INDUSTRY_ANIMAL_FEED_AND_FISH
+        - INDUSTRY_BEVERAGES
+        - INDUSTRY_CHEMICALS_OIL_PRODUCTS_COAL_OTHER
+        - INDUSTRY_CIGARETTES
+        - INDUSTRY_CLOTHING
+        - INDUSTRY_CRUDE_PALM_OIL
+        - INDUSTRY_CRUMB_RUBBER
+        - INDUSTRY_ESSENTIAL_OILS
+        - INDUSTRY_FERTILIZER_PEST_MEDICINE
+        - INDUSTRY_FLOUR
+        - INDUSTRY_LEATHER
+        - INDUSTRY_OTHER_CHEMICAL_PRODUCTS
+        - INDUSTRY_OTHER_FOOD
+        - INDUSTRY_OTHER_PLANT_OILS
+        - INDUSTRY_OTHER_RUBBER_PRODUCTS
+        - INDUSTRY_OTHER_WOOD
+        - INDUSTRY_OTHERS
+        - INDUSTRY_PALM_SEED_OIL
+        - INDUSTRY_PAPER_AND_PAPER_PRODUCTS
+        - INDUSTRY_PAPER_MATERIALS_PULP
+        - INDUSTRY_PLASTIC
+        - INDUSTRY_PRINTING_AND_PUBLISHING
+        - INDUSTRY_SALT
+        - INDUSTRY_SUGAR
+        - INDUSTRY_TOBACCO
+        - INDUSTRY_WOOD_MATERIAL
+        - INDUSTRY_WOODEN_FURNITURE
+        - INLAND_FISHING_OTHERS
+        - INLAND_FISHING_SHRIMP
+        - LAND_PUBLIC_TRANSPORT
+        - MARINE_FISHERIES_OTHERS
+        - MARINE_FISHING_SHRIMP
+        - METAL_ORE_MINING_OTHERS
+        - MINING
+        - MINING_METAL_ORE_TIN
+        - MINING_METAL_ORES_NICKEL
+        - MINING_ORE_BAUXITE
+        - MINING_ORE_COPPER
+        - MINING_OTHER_MINING_GOODS
+        - NON_METAL_MINING_PRODUCTS_PROCESSING_INDUSTRY_OTHER_THAN_PETROLEUM_AND_COAL_PRODUCTS_CEMENT
+        - NON_METAL_MINING_PRODUCTS_PROCESSING_INDUSTRY_OTHER_THAN_PETROLEUM_AND_COAL_PRODUCTS_CERAMICS
+        - NON_METAL_MINING_PRODUCTS_PROCESSING_INDUSTRY_OTHER_THAN_PETROLEUM_AND_COAL_PRODUCTS_OTHERS
+        - OIL_AND_GAS_MINING
+        - OIL_FUEL_DISTRIBUTION
+        - OIL_PALM_PLANTATION
+        - OTHER_COMPONENT_MANUFACTURING
+        - OTHER_DISTRIBUTIONS
+        - OTHER_DOMESTIC_COMPONENT_ASSEMBLY
+        - OTHER_ELECTRICS
+        - OTHER_FACILITIES
+        - OTHER_FARMS
+        - OTHER_FINISHED_GOODS_EXPORT
+        - OTHER_OVERSEAS_COMPONENT_ASSEMBLY
+        - OTHER_PLANTATIONS
+        - OTHER_RAW_MATERIAL_EXPORT
+        - OTHERS_HOUSEHOLD_APPLIANCES
+        - OTHERS_HOUSING
+        - OTHERS_OTHERS
+        - OTHERS_VEHICLES
+        - OVERSEAS_COMPONENT_ASSEMBLY_AGRICULTURAL_TOOLS
+        - OVERSEAS_COMPONENT_ASSEMBLY_AUTOMOTIVE
+        - OVERSEAS_COMPONENT_ASSEMBLY_ELECTRONICS
+        - OVERSEAS_MARITIME_COMPONENT_ASSEMBLY
+        - PALA_PLANTATION
+        - PALM_OIL_SEED_RAW_MATERIAL_EXPORT
+        - PEPPER_PLANTATION
+        - PHARMACEUTICAL_INDUSTRY
+        - POULTRY_FARM
+        - PROCESSING_INDUSTRY_OF_NON_METAL_MINING_PRODUCTS_OTHER_THAN_PETROLEUM_AND_COAL_PRODUCTS_BRICKS_TILE
+        - PUBLIC_AIR_TRANSPORT
+        - PURCHASE_COLLECTION_BRG_TRADE_DLM_NEG_CLOVES
+        - PURCHASE_COLLECTION_BRG_TRADE_DLM_NEG_COFFEE
+        - PURCHASE_COLLECTION_BRG_TRADE_DLM_NEG_COPRA
+        - PURCHASE_COLLECTION_BRG_TRADE_DLM_NEG_CORN
+        - PURCHASE_COLLECTION_BRG_TRADE_DLM_NEG_COTTON
+        - PURCHASE_COLLECTION_BRG_TRADE_DLM_NEG_LADA
+        - PURCHASE_COLLECTION_BRG_TRADE_DLM_NEG_LIVING_ANIMALS_THE_RESULTS
+        - PURCHASE_COLLECTION_BRG_TRADE_DLM_NEG_OTHER
+        - PURCHASE_COLLECTION_BRG_TRADE_DLM_NEG_PALM_TREE
+        - PURCHASE_COLLECTION_BRG_TRADE_DLM_NEG_RICE
+        - PURCHASE_COLLECTION_BRG_TRADE_DLM_NEG_RUBBER
+        - PURCHASE_COLLECTION_BRG_TRADE_DLM_NEG_SALT
+        - PURCHASE_COLLECTION_BRG_TRADE_DLM_NEG_SUGAR_STOCKS
+        - PURCHASE_COLLECTION_BRG_TRADE_DLM_NEG_TEH
+        - PURCHASE_COLLECTION_BRG_TRADE_DLM_NEG_TOBACCO
+        - PURCHASE_COLLECTION_BRG_TRADE_DLM_NEG_WOOD
+        - RATTAN_RAW_MATERIAL_EXPORT
+        - REMILLING_AND_SMOKEHOUSE
+        - RESTAURANT
+        - RETAIL_TRADE
+        - RICE_DISTRIBUTION
+        - RICE_MILL_HULLER
+        - RIVER_PUBLIC_TRANSPORT
+        - RUBBER_PLANTATION
+        - RUBBER_SEMI_FINISHED_GOODS_EXPORT
+        - RURAL_ELECTRIC
+        - SALT_DISTRIBUTION
+        - SEA_PUBLIC_TRANSPORT
+        - SHRIMP_FINISHED_GOODS_EXPORT
+        - SOCIAL_COMMUNITY_SERVICES
+        - SOCIAL_COMMUNITY_SERVICES_EDUCATION_HIGHER_EDUCATION
+        - SOCIAL_COMMUNITY_SERVICES_ENTERTAINMENT_AND_CULTURE
+        - SOCIAL_COMMUNITY_SERVICES_HEALTH_CARE_TREATMENT
+        - SOCIAL_COMMUNITY_SERVICES_HEALTH_PROFESSION
+        - SOCIAL_COMMUNITY_SERVICES_OTHER_EDUCATION
+        - SOCIAL_COMMUNITY_SERVICES_OTHERS
+        - SUGAR_DISTRIBUTION
+        - SUGARCANE_PLANTATION
+        - TEA_PLANTATION
+        - TEXTILE_INDUSTRY
+        - TOBACCO_PLANTATION
+        - TRADE_RESTAURANT_AND_HOTEL
+        - TRANSPORTATION_WAREHOUSING_COMMUNICATIONS
+        - TRAVEL_BUREAU
+        - VANILLA_PLANTATION
+        - WAREHOUSING
+        - WATER
+        - BANKING
+        - EDUCATION
+        - FINANCE
+        - GOVERNMENT
+        - IT
+        - LAW
+        - MANUFACTORY
+        - PLANTATION
+        - PROPERTY
+        - SERVICES
+        - STATE_OWNED_ENTERPRISES
+        - TAX
+        - TELECOMMUNICATION
+        - TOURISM
+        - TRADING
+        - TRANSPORTATION
+        - OTHER
+    IncomeEnum:
+      type: string
+      description: |
+        - SALARY
+        - BUSINESS
+        - OTHER
+      enum:
+        - SALARY
+        - BUSINESS
+        - OTHER
+    
     UserEntityManagementsCommonItem:
       properties:
         name:
@@ -2291,13 +2838,17 @@ components:
         - birthDate
         - birthPlace
         - email
-        - motherMaidenName
         - maritalStatus
-        - title
         - domicile
         - religion
         - gender
         - job
+        - industry
+        - emergencyContactName
+        - emergencyContactNumber
+        - housingStatus
+        - incomePerMonth
+        - SourceIncome
         - education
         - address
         - mobileNumber
@@ -2351,6 +2902,29 @@ components:
           $ref: '#/components/schemas/ReligionEnum'
         job:
           $ref: '#/components/schemas/JobEnum'
+        industry:
+          $ref: '#/components/schemas/IndustryEnum'
+        emergencyContactName:
+          type: string
+          minLength: 2
+          maxLength: 30
+          description: 'Emergency contact name of authorised signatory'
+          example: 'jhon'
+        emergencyContactNumber:
+          type: string
+          description: 'Emergency contact number of the authorised signatory in E.164 format'
+          pattern: '^\+62\d{1,14}$'
+          minLength: 5
+          maxLength: 20
+          example: '+6281274384381'
+        housingStatus:
+          $ref: '#/components/schemas/HousingStatusEnum'
+        incomePerMonth:
+          type: string
+          minLength: 1
+          example: '19999999'
+        SourceIncome:
+          $ref: '#/components/schemas/IncomeEnum'
         education:
           $ref: '#/components/schemas/EducationEnum'
         address:
@@ -2377,8 +2951,6 @@ components:
               type: object
               required:
                 - number
-                - issuingCity
-                - expiryDate
               properties:
                 number:
                   type: string
@@ -2411,8 +2983,6 @@ components:
                   minLength: 5
             npwp:
               type: object
-              required:
-                - number
               properties:
                 number:
                   type: string
@@ -2420,6 +2990,218 @@ components:
                   maxLength: 16
                   example: '081785542123321'
 
+    # swiftcode
+    UserSwiftCode:
+      type: string
+      example: 'BMRIIDJA'
+      minLength: 3
+      maxLength: 10
+      description: |
+        - BANK_JASA_JAKARTA = "JAJSIDJ1"  # Bank Jasa Jakarta
+        - BPD_JAWA_TIMUR = "PDJTIDJ1"  # Bank Pembangunan Daerah Jawa Timur
+        - BANK_MESTIKA = "MEDHIDS1"  # Bank Mestika
+        - BANK_MUAMALAT = "MUABIDJA"  # Bank Muamalat
+        - BANK_MULTIARTA_SENTOSA = "BMSEIDJA"  # Bank Multiarta Sentosa
+        - BANK_NATIONALNOBU = "LFIBIDJ1"  # Bank Nationalnobu
+        - BANK_NUSANTARA_PARAHYANGAN = "NUPAIDJ6"  # Bank Nusantara Parahyangan
+        - BANK_SBI_INDONESIA = "IDMOIDJ1"  # Bank SBI Indonesia
+        - BANK_SINARMAS = "SBJKIDJA"  # Bank Sinarmas
+        - BPD_BENGKULU = "PDBKIDJ1"  # Bank Pembangunan Daerah Bengkulu
+        - BPD_DAERAH_ISTIMEWA_YOGYAKARTA_DIY_UUS = "SYYKIDJ1"  # Bank Pembangunan Daerah Istimewa Yogyakarta (DIY) Unit Usaha Syariah
+        - BPD_JATENG = "PDJGIDJ1"  # Bank Pembangunan Daerah Jawa Tengah
+        - BPD_JATIM_UUS = "SYJTIDJ1"  # Bank Pembangunan Daerah Jawa Timur Unit Usaha Syariah
+        - BPD_KALBAR = "PDKBIDJ1"  # Bank Pembangunan Daerah Kalimantan Barat
+        - BPD_KALBAR_UUS = "SYKBIDJ1"  # Bank Pembangunan Daerah Kalimantan Barat Unit Usaha Syariah
+        - BPD_KALSEL = "PDKSIDJ1"  # Bank Pembangunan Daerah Kalimantan Selatan
+        - BPD_KALTENG = "PDKGIDJ1"  # Bank Pembangunan Daerah Kalimantan Tengah
+        - BPD_KALTIM_UUS = "SYKTIDJ1"  # Bank Pembangunan Daerah Kalimantan Timur Unit Usaha Syariah
+        - BPD_LAMPUNG = "PDLPIDJ1"  # Bank Pembangunan Daerah Lampung
+        - BPD_NTT = "PDNTIDJ1"  # Bank Pembangunan Daerah Nusa Tenggara Timur
+        - BPD_PAPUA = "PDIJIDJ1"  # Bank Pembangunan Daerah Papua
+        - BPD_RIAU = "PDRIIDJA"  # Bank Pembangunan Daerah Riau
+        - BPD_SULAWESI_TENGAH = "PDWGIDJ1"  # Bank Pembangunan Daerah Sulawesi Tengah
+        - BPD_SULAWESI_TENGGARA = "PDWRIDJ1"  # Bank Pembangunan Daerah Sulawesi Tenggara
+        - BPD_SULSELBAR_UUS = "SYWSIDJ1"  # Bank Pembangunan Daerah Sulawesi Selatan Unit Usaha Syariah
+        - BPD_SULUT = "PDWUIDJ1"  # Bank Pembangunan Daerah Sulawesi Utara
+        - BPD_SUMATERA_BARAT = "PDSBIDSP"  # Bank Pembangunan Daerah Sumatera Barat
+        - BPD_SUMSEL = "BSSPIDSP"  # Bank Pembangunan Daerah Sumatera Selatan
+        - BPD_SUMUT = "PDSUIDJ1"  # Bank Pembangunan Daerah Sumatera Utara
+        - BPD_SUMUT_UUS = "SYSUIDJ1"  # Bank Pembangunan Daerah Sumatera Utara Unit Usaha Syariah
+        - BTN = "BTANIDJA"  # Bank Tabungan Negara
+        - BTN_SYARIAH = "SYBTIDJ1"  # Bank Tabungan Negara Syariah
+        - CENTRATAMA_NASIONAL_BANK = "CNBAIDJ1"  # Centratama Nasional Bank
+        - CITIBANK = "CITIIDJX"  # Citibank
+        - DBS_INDONESIA = "DBSBIDJA"  # DBS Indonesia
+        - BANK_IBK_INDONESIA = "IBKOIDJA"  # Bank IBK Indonesia
+        - BANK_MITRANIAGA = "MGABIDJ1"  # Bank Mitraniaga
+        - BANK_MIZUHO = "MHCCIDJA"  # Bank Mizuho
+        - BANK_SINAR_HARAPAN_BALI = "SIHBIDJ1"  # Bank Sinar Harapan Bali
+        - BANK_BNI_UUS = "SYNIIDJ1"  # Bank BNI Unit Usaha Syariah
+        - BPD_ACEH = "PDACIDJ1"  # Bank Pembangunan Daerah Aceh
+        - BANK_CIMB_NIAGA = "BNIAIDJA"  # Bank CIMB Niaga
+        - BANK_DANAMON_INDONESIA = "BDINIDJA"  # Bank Danamon Indonesia
+        - BANK_GANESHA = "GNESIDJA"  # Bank Ganesha
+        - BANK_HANA = "HNBNIDJA"  # Bank Hana
+        - BANK_MANDIRI = "BMRIIDJA"  # Bank Mandiri
+        - BANK_MASPION = "MASDIDJ1"  # Bank Maspion
+        - BANK_BNI_46 = "BNINIDJA"  # Bank BNI 46
+        - BANK_MAYORA = "MAYOIDJA"  # Bank Mayora
+        - BANK_OF_CHINA = "BKCHIDJA"  # Bank of China
+        - BANK_ROYAL = "ROYBIDJ1"  # Bank Royal
+        - BANK_VICTORIA = "VICTIDJ1"  # Bank Victoria
+        - BANK_WOORI = "HVBKIDJA"  # Bank Woori
+        - BPD_BANTEN = "EKSTIDJ1"  # Bank Pembangunan Daerah Banten
+        - BPD_NTB = "PDNBIDJ1"  # Bank Pembangunan Daerah Nusa Tenggara Barat
+        - BANK_FAMA = "FAMAIDJ1"  # Bank Fama
+        - BANK_ARTA_NIAGA_KENCANA = "ARNKIDJ1"  # Bank Arta Niaga Kencana
+        - BANK_BISNIS = "BUSTIDJ1"  # Bank Bisnis
+        - BANK_PURBA_DANARTA = "PUBAIDJ1"  # Bank Purba Danarta
+        - BANK_CAPITAL = "BCIAIDJA"  # Bank Capital
+        - BANK_JABAR_BANTEN_SYARIAH = "SYJBIDJ1"  # Bank Jabar Banten Syariah
+        - BANK_CHINATRUST = "CTCBIDJA"  # Bank Chinatrust
+        - BANK_COMMONWEALTH = "BICNIDJA"  # Bank Commonwealth
+        - BANK_INDEX_SELINDO = "BIDXIDJA"  # Bank Index Selindo
+        - BANK_BRI_AGRONIAGA = "AGTBIDJA"  # Bank BRI Agroniaga
+        - BANK_MAYAPADA_INTERNATIONAL = "MAYAIDJA"  # Bank Mayapada International
+        - BANK_MEGA = "MEGAIDJA"  # Bank Mega
+        - BNP_PARIBAS = "BNPAIDJA"  # BNP Paribas
+        - BOT = "BOTKIDJX"  # Bank of Tokyo-Mitsubishi UFJ
+        - INDONESIA_EXIM_BANK = "LPEIIDJ1"  # Indonesia Exim Bank
+        - JP_MORGAN = "CHASIDJX"  # JP Morgan Chase Bank
+        - HSBC = "HSBCIDJA"  # HSBC
+        - ICBC = "ICBKIDJA"  # Industrial and Commercial Bank of China
+        - KESAWAN = "AWANIDJA"  # Bank Kesawan
+        - MAYBANK_INDONESIA = "IBBKIDJA"  # Maybank Indonesia
+        - NAGARI_UUS = "SYSBIDJ1"  # Bank Nagari Unit Usaha Syariah
+        - OCBC_NISP = "NISPIDJA"  # OCBC NISP
+        - PANIN_SYARIAH = "ARFAIDJ1"  # Bank Panin Syariah
+        - PT_BANK_HSBC_INDONESIA = "EKONIDJA"  # PT Bank HSBC Indonesia
+        - PT_BANK_SHINHAN_INDONESIA = "MEEKIDJ1"  # PT Bank Shinhan Indonesia
+        - PT_BANK_ACEH_SYARIAH = "SYACIDJ1"  # PT Bank Aceh Syariah
+        - RABOBANK = "RABOIDJA"  # Rabobank
+        - STANDARD_CHARTERED_BANK = "SCBLIDJX"  # Standard Chartered Bank
+        - SYARIAH_BUKOPIN = "SDOBIDJ1"  # Bank Syariah Bukopin
+        - SYARIAH_MEGA = "BUTGIDJ1"  # Bank Syariah Mega
+        - UOB_BUANA = "BBIJIDJA"  # UOB Buana
+        - BANK_DKI = "BDKIIDJA"  # Bank DKI
+        - BANK_CENTRAL_ASIA_BCA = "CENAIDJA"  # Bank Central Asia (BCA)
+        - BPD_SULSELBAR = "PDWSIDJ1"  # Bank Pembangunan Daerah Sulawesi Selatan Barat
+        - BANK_JAGO = "ATOSIDJ1"  # Bank Jago
+        - BANK_NEO_COMMERCE = "YUDBIDJ1"  # Bank Neo Commerce
+        - BANK_SEABANK_INDONESIA = "KSEBIDJ1"  # Bank Seabank Indonesia
+        - ALLO_BANK_INDONESIA = "HRDAIDJ1"  # Allo Bank Indonesia
+        - BANK_AGRIS = "AGSSIDJA"  # Bank Agris
+        - BPD_JAMBI_UUS = "SYJMIDJ1"  # Bank Pembangunan Daerah Jambi Unit Usaha Syariah
+        - BTPN = "BTPNIDJA"  # BTPN
+        - BANK_SYARIAH_INDONESIA = "BSMDIDJA"  # Bank Syariah Indonesia
+        - RESONA_PERDANIA = "BPIAIDJA"  # Resona Perdania
+        - ROYAL_BANK_OF_SCOTLAND_RBS = "ABNAIDJA"  # Royal Bank of Scotland (RBS)
+        - SYARIAH_BRI = "DJARIDJ1"  # Bank Syariah BRI
+        - BANK_ALADIN_SYARIAH = "MBBEIDJA"  # Bank Aladin Syariah
+        - BANK_OKE_INDONESIA = "RIPAIDJ1"  # Bank Oke Indonesia
+      enum:
+        - JAJSIDJ1
+        - PDJTIDJ1
+        - MEDHIDS1
+        - MUABIDJA
+        - BMSEIDJA
+        - LFIBIDJ1
+        - NUPAIDJ6
+        - IDMOIDJ1
+        - SBJKIDJA
+        - PDBKIDJ1
+        - SYYKIDJ1
+        - PDJGIDJ1
+        - SYJTIDJ1
+        - PDKBIDJ1
+        - SYKBIDJ1
+        - PDKSIDJ1
+        - PDKGIDJ1
+        - SYKTIDJ1
+        - PDLPIDJ1
+        - PDNTIDJ1
+        - PDIJIDJ1
+        - PDRIIDJA
+        - PDWGIDJ1
+        - PDWRIDJ1
+        - SYWSIDJ1
+        - PDWUIDJ1
+        - PDSBIDSP
+        - BSSPIDSP
+        - PDSUIDJ1
+        - SYSUIDJ1
+        - BTANIDJA
+        - SYBTIDJ1
+        - CNBAIDJ1
+        - CITIIDJX
+        - DBSBIDJA
+        - IBKOIDJA
+        - MGABIDJ1
+        - MHCCIDJA
+        - SIHBIDJ1
+        - SYNIIDJ1
+        - PDACIDJ1
+        - BNIAIDJA
+        - BDINIDJA
+        - GNESIDJA
+        - HNBNIDJA
+        - BMRIIDJA
+        - MASDIDJ1
+        - BNINIDJA
+        - MAYOIDJA
+        - BKCHIDJA
+        - ROYBIDJ1
+        - VICTIDJ1
+        - HVBKIDJA
+        - EKSTIDJ1
+        - PDNBIDJ1
+        - FAMAIDJ1
+        - ARNKIDJ1
+        - BUSTIDJ1
+        - PUBAIDJ1
+        - BCIAIDJA
+        - SYJBIDJ1
+        - CTCBIDJA
+        - BICNIDJA
+        - BIDXIDJA
+        - AGTBIDJA
+        - MAYAIDJA
+        - MEGAIDJA
+        - BNPAIDJA
+        - BOTKIDJX
+        - LPEIIDJ1
+        - CHASIDJX
+        - HSBCIDJA
+        - ICBKIDJA
+        - AWANIDJA
+        - IBBKIDJA
+        - SYSBIDJ1
+        - NISPIDJA
+        - ARFAIDJ1
+        - EKONIDJA
+        - MEEKIDJ1
+        - SYACIDJ1
+        - RABOIDJA
+        - SCBLIDJX
+        - SDOBIDJ1
+        - BUTGIDJ1
+        - BBIJIDJA
+        - BDKIIDJA
+        - CENAIDJA
+        - PDWSIDJ1
+        - ATOSIDJ1
+        - YUDBIDJ1
+        - KSEBIDJ1
+        - HRDAIDJ1
+        - AGSSIDJA
+        - SYJMIDJ1
+        - BTPNIDJA
+        - BSMDIDJA
+        - BPIAIDJA
+        - ABNAIDJA
+        - DJARIDJ1
+        - MBBEIDJA
+        - RIPAIDJ1
     # ftm callback
     FtmCreateCallback:
       type: object
@@ -2479,18 +3261,6 @@ components:
           type: string
         agreement_pdf_url:
           type: string
-
-    # FtmCallback:
-    #   allOf:
-    #     - $ref: '#/components/schemas/FtmCreateBorrowerCallback'
-    #     - type: object
-    #       properties:
-    #         type:
-    #           type: string
-    #         createBorrower:
-    #           $ref: '#/components/schemas/FtmCreateBorrowerCallback'
-    #         borrowerScore:
-    #           $ref: '#/components/schemas/FtmBorrowerScoreCallback'
 
     FtmBorrowerScoreCallback:
       type: object
