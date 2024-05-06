@@ -815,7 +815,7 @@ components:
           example: '0.3,null,null,LOW'
         term:
           type: number
-          minLength: 0
+          minimum: 0
           example: 120
 
     GetAccessToken:
