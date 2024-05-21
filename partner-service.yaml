@@ -194,7 +194,7 @@ paths:
               schema:
                   $ref: '#/components/schemas/Error401Response'
         409:
-          description: example error 401 response
+          description: example error 409 response
           content:
             application/json:
               schema:
