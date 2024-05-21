@@ -5328,7 +5328,7 @@
             }
           },
           "409": {
-            "description": "example error 401 response",
+            "description": "example error 409 response",
             "content": {
               "application/json": {
                 "schema": {
