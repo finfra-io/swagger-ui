@@ -657,6 +657,7 @@ components:
             - BUSINESS
           minLength: 8
           maxLength: 8
+          description: define partner's user
         entity:
           $ref: '#/components/schemas/UserEntity'
         authorised_signatory:
@@ -832,6 +833,7 @@ components:
         access_token:
           type: string
           example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.C5jr84b95N0Shr4reDUym42SLNc0KauYn3b7rBQyY7k'
+          description: contains the security credentials for a login session and identifies the user,
     CreateDocumentRequest:
       type: object
       required:
@@ -845,14 +847,20 @@ components:
           type: string
           description: |
             enum:
-            - KTP
-            - SELFIE
-            - NPWP
-            - NPWP_COMPANY
+            - KTP 
+            <br>which stands for Kartu Tanda Penduduk, is an official identity card issued by the Indonesian government<br>
+            - SELFIE 
+            <br> a photo that taken of oneself <br>
+            - NPWP 
+            <br>stands for Nomor Pokok Wajib Pajak, is an official identity for tax and issued by the indonesian <br> goverment]
+            - NPWP_COMPANY 
+            <br>stands for Nomor Pokok Wajib Pajak, an official identity for company tax and issued by indonesia government<br>
             - LOAN_AGREEMENT
             - INVOICE_FINANCING
             - CREDIT_HISTORY
+            <br> History of credit history
             - TRANSACTION_HISTORY
+            <br> Information of transaction history
             - OTHER
           enum:
             - KTP
@@ -891,11 +899,14 @@ components:
           type: string
           minLength: 24
           maxLength: 24
+          description: Id that represent document
         description:
           type: string
+          description: Explanation of document
         type:
           type: string
           nullable: false
+          description: Document type
         submission_id:
           type: string
     UpdateDocumentsRequest:
@@ -2754,7 +2765,7 @@ components:
         - education
         - address
         - mobile_number
-        - bankAccount
+        - bank_account
         - documents
       description: 'Authorised Signatory'
       properties:
@@ -2841,7 +2852,7 @@ components:
           minLength: 5
           maxLength: 20
           example: '+6281274384381'
-        bankAccount:
+        bank_account:
           $ref: '#/components/schemas/UserBankAccount'
         documents:
           type: object
