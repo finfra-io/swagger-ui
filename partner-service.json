@@ -432,6 +432,41 @@
         }
       }
     },
+    "/api/core/users/score-report": {
+      "post": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "tags": [
+          "Borrower"
+        ],
+        "operationId": "getBorrowerCreditScore",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/scoreReportRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "A borrower credit score",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/scoreReport"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/core/users/{userId}/approve": {
       "post": {
         "security": [
@@ -877,7 +912,7 @@
     },
     "/api/core/ftm/users/{endpointKey}/{userId}": {
       "post": {
-        "summary": "partner need to be verified and credit score obtained before creating a loan or getting a credit score list",
+        "summary": "partner need to be verified and credit score obtained before creating a loan or getting a credit score list (will deprecated at august 2024)",
         "tags": [
           "Credit Score"
         ],
@@ -896,6 +931,34 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CheckUserHub"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/core/users/{userId}/{endpointKey}": {
+      "post": {
+        "summary": "partner need to be verified and credit score obtained before creating a loan or getting a credit score list (new version)",
+        "tags": [
+          "Credit Score"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/endpointKey"
+          },
+          {
+            "$ref": "#/components/parameters/userId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FeatureFlag"
                 }
               }
             }
@@ -1075,6 +1138,47 @@
         }
       }
     },
+    "/api/core/loans/{loanUniqueId}/disbursement": {
+      "post": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "tags": [
+          "Finfra Disbursement Services"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/loanUniqueId"
+          }
+        ],
+        "summary": "Disburse loan",
+        "description": "This endpoint will initiate disburse the loan money",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FeatureFlag"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "example error 400 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error400Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/errors/{error_code}": {
       "get": {
         "security": [],
@@ -1193,6 +1297,23 @@
   },
   "components": {
     "schemas": {
+      "FeatureFlag": {
+        "type": "object",
+        "required": [
+          "key",
+          "value"
+        ],
+        "properties": {
+          "key": {
+            "type": "string",
+            "example": "test-feature-flag"
+          },
+          "value": {
+            "type": "boolean",
+            "example": false
+          }
+        }
+      },
       "UserList": {
         "properties": {
           "users": {
@@ -1254,12 +1375,80 @@
           }
         }
       },
+      "CheckUserHub": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ENGINE_CHECK_PASSED",
+              "ENGINE_CHECK_FAILED",
+              "OTHER_STATUS"
+            ]
+          },
+          "checking": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "SUCCESS",
+                  "FAILED"
+                ]
+              },
+              "reason": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "scoreReportRequest": {
+        "type": "object",
+        "required": [
+          "user_id"
+        ],
+        "properties": {
+          "userId": {
+            "type": "string",
+            "example": "1234567890abcdef-1234567890abcdef-1234567890abcdef"
+          }
+        }
+      },
+      "scoreReport": {
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "nik": {
+            "type": "string"
+          },
+          "pdf_clik_link": {
+            "type": "string"
+          },
+          "pdf_afpi_link": {
+            "type": "string"
+          }
+        }
+      },
       "CreateUserRequest": {
         "type": "object",
         "required": [
           "type",
-          "authorised_signatory",
-          "swift_code"
+          "authorised_signatory"
         ],
         "properties": {
           "type": {
@@ -1268,17 +1457,13 @@
               "PERSONAL",
               "BUSINESS"
             ],
-            "minLength": 8,
-            "maxLength": 8
+            "example": "BUSINESS"
           },
           "entity": {
             "$ref": "#/components/schemas/UserEntity"
           },
           "authorised_signatory": {
             "$ref": "#/components/schemas/UserAuthorisedSignatory"
-          },
-          "swift_code": {
-            "$ref": "#/components/schemas/UserSwiftCode"
           }
         }
       },
@@ -1446,40 +1631,25 @@
           }
         }
       },
-      "CheckUserHub": {
+      "CreditHistoryRequest": {
         "type": "object",
+        "required": [
+          "nik",
+          "mobileNumber"
+        ],
         "properties": {
-          "id": {
-            "type": "string"
-          },
-          "firstName": {
-            "type": "string"
-          },
-          "lastName": {
-            "type": "string"
-          },
-          "status": {
+          "nik": {
             "type": "string",
-            "enum": [
-              "ENGINE_CHECK_PASSED",
-              "ENGINE_CHECK_FAILED",
-              "OTHER_STATUS"
-            ]
+            "minLength": 16,
+            "maxLength": 16
           },
-          "checking": {
-            "type": "object",
-            "properties": {
-              "status": {
-                "type": "string",
-                "enum": [
-                  "SUCCESS",
-                  "FAILED"
-                ]
-              },
-              "reason": {
-                "type": "string"
-              }
-            }
+          "mobileNumber": {
+            "type": "string",
+            "description": "Phone number of the management representative in E.164 format",
+            "pattern": "^\\+62\\d{1,14}$",
+            "minLength": 10,
+            "maxLength": 20,
+            "example": "+6281274384381"
           }
         }
       },
@@ -1566,7 +1736,7 @@
         "type": "object",
         "required": [
           "id",
-          "partner_id",
+          "partnerId",
           "user",
           "product",
           "amount",
@@ -1575,15 +1745,15 @@
         "properties": {
           "id": {
             "type": "string",
-            "example": "7097bbbb-1ffa-47aa-8cb4-ad01e9e73762"
+            "example": "6544de568f002963846527e0"
           },
-          "partner_id": {
+          "partnerId": {
             "type": "string",
             "example": "7097bbbb-1ffa-47aa-8cb4-ad01e9e73762"
           },
           "userId": {
             "type": "string",
-            "example": "7097bbbb-1ffa-47aa-8cb4-ad01e9e73762"
+            "example": "6544de568f002963846527e0"
           },
           "product": {
             "$ref": "#/components/schemas/LoanProduct"
@@ -1628,16 +1798,28 @@
           "HIGH",
           "VERY_HIGH",
           "NOT_AVAILABLE"
-        ],
-        "minLength": 3,
-        "maxLength": 20
+        ]
       },
       "LoanProduct": {
         "type": "string",
-        "minLength": 7,
-        "maxLength": 50,
         "example": "finfra_sandbox_wr_IL_weekly",
         "enum": [
+          "finfra_stg_dev_wr_spl",
+          "finfra_stg_dev_wr_il_weekly",
+          "finfra_stg_dev_wr_il_biweekly",
+          "finfra_stg_dev_wr_il_monthly",
+          "finfra_stg_dev_ir_spl",
+          "finfra_stg_dev_ir_il_weekly",
+          "finfra_stg_dev_ir_il_biweekly",
+          "finfra_stg_dev_ir_il_monthly",
+          "finfra_stg_dev_pf_spl",
+          "finfra_stg_dev_pf_il_weekly",
+          "finfra_stg_dev_pf_il_biweekly",
+          "finfra_stg_dev_pf_il_monthly",
+          "finfra_stg_dev_bnpl_spl",
+          "finfra_stg_dev_bnpl_il_weekly",
+          "finfra_stg_dev_bnpl_il_biweekly",
+          "finfra_stg_dev_bnpl_il_monthly",
           "finfra_sandbox_wr_spl",
           "finfra_sandbox_wr_IL_weekly",
           "finfra_sandbox_wr_IL_biweekly",
@@ -1651,6 +1833,7 @@
           "finfra_sandbox_pf_IL_biweekly",
           "finfra_sandbox_pf_IL_monthly",
           "main_finfra_spl_bnpl_loan_creation_no_login",
+          "finfra_sandbox_bnpl_spl",
           "finfra_sandbox_bnpl_IL_weekly",
           "finfra_sandbox_bnpl_IL_biweekly",
           "finfra_sandbox_bnpl_IL_monthly",
@@ -1667,18 +1850,51 @@
           "finfra_staging_pf_IL_weekly",
           "finfra_staging_pf_IL_biweekly",
           "finfra_staging_pf_IL_monthly",
+          "finfra_staging_bnpl_spl",
           "finfra_staging_bnpl_IL_weekly",
           "finfra_staging_bnpl_IL_biweekly",
-          "finfra_staging_bnpl_IL_monthly"
+          "finfra_staging_bnpl_IL_monthly",
+          "finfra_production_wr_spl",
+          "finfra_production_wr_IL_weekly",
+          "finfra_production_wr_IL_biweekly",
+          "finfra_production_wr_IL_monthly",
+          "finfra_production_ir_spl",
+          "finfra_production_ir_IL_weekly",
+          "finfra_production_ir_IL_biweekly",
+          "finfra_production_ir_IL_monthly",
+          "finfra_production_pf_spl",
+          "finfra_production_pf_IL_weekly",
+          "finfra_production_pf_IL_biweekly",
+          "finfra_production_pf_IL_monthly",
+          "finfra_production_bnpl_spl",
+          "finfra_production_bnpl_IL_weekly",
+          "finfra_production_bnpl_IL_biweekly",
+          "finfra_production_bnpl_IL_monthly"
         ]
       },
       "CreateLoanRequest": {
         "type": "object",
-        "required": [
-          "product",
-          "requested_amount",
-          "term",
-          "fields"
+        "oneOf": [
+          {
+            "required": [
+              "term"
+            ],
+            "properties": {
+              "due_date": {
+                "not": {}
+              }
+            }
+          },
+          {
+            "required": [
+              "due_date"
+            ],
+            "properties": {
+              "term": {
+                "not": {}
+              }
+            }
+          }
         ],
         "properties": {
           "endpoint_key": {
@@ -1686,30 +1902,34 @@
           },
           "requested_amount": {
             "type": "number",
-            "minimum": 1,
             "example": 1200000
           },
           "term": {
             "type": "number",
-            "minimum": 1,
             "example": 120
+          },
+          "due_date": {
+            "type": "string",
+            "example": "2099-11-01",
+            "format": "date"
+          },
+          "get_details": {
+            "type": "boolean",
+            "example": true
           },
           "fields": {
             "type": "object",
             "properties": {
               "annual_interest_rate": {
                 "type": "number",
-                "minimum": 1,
                 "nullable": true
               },
               "disbursement_fee": {
                 "type": "number",
-                "minimum": 0,
                 "nullable": true
               },
               "cs_payment_day": {
                 "type": "number",
-                "minimum": 0,
                 "nullable": true
               },
               "request_effective_on": {
@@ -1718,12 +1938,10 @@
               },
               "grace_term": {
                 "type": "number",
-                "minimum": 0,
                 "nullable": true
               },
               "interest_fee": {
                 "type": "number",
-                "minimum": 0,
                 "nullable": true
               },
               "partner_risk_level": {
@@ -1731,29 +1949,35 @@
               }
             }
           }
-        }
+        },
+        "required": [
+          "product",
+          "requested_amount",
+          "fields"
+        ]
       },
       "CreateBnplRequest": {
         "type": "object",
         "required": [
+          "product",
           "amount",
           "description",
           "term"
         ],
         "properties": {
+          "endpoint_key": {
+            "$ref": "#/components/schemas/LoanProduct"
+          },
           "amount": {
             "type": "number",
-            "example": 1200000,
-            "minimum": 1
+            "example": 1200000
           },
           "description": {
             "type": "string",
-            "minLength": 1,
             "example": "0.3,null,null,LOW"
           },
           "term": {
             "type": "number",
-            "minimum": 1,
             "example": 120
           }
         }
@@ -1782,21 +2006,12 @@
             "format": "binary"
           },
           "type": {
-            "type": "string",
-            "description": "enum:\n- KTP\n- SELFIE\n- NPWP\n- NPWP_COMPANY\n- LOAN_AGREEMENT\n- INVOICE_FINANCING\n- CREDIT_HISTORY\n- TRANSACTION_HISTORY\n- OTHER\n",
-            "enum": [
-              "KTP",
-              "SELFIE",
-              "NPWP",
-              "NPWP_COMPANY",
-              "LOAN_AGREEMENT",
-              "INVOICE_FINANCING",
-              "CREDIT_HISTORY",
-              "TRANSACTION_HISTORY",
-              "OTHER"
-            ]
+            "type": "string"
           },
           "reference_id": {
+            "type": "string"
+          },
+          "user_id": {
             "type": "string"
           },
           "description": {
@@ -2351,8 +2566,6 @@
       },
       "CountryCode": {
         "type": "string",
-        "minLength": 2,
-        "maxLength": 4,
         "enum": [
           "AF",
           "AX",
@@ -2612,18 +2825,14 @@
           "MARRIED",
           "WIDOWER",
           "WIDOW"
-        ],
-        "minLength": 5,
-        "maxLength": 10
+        ]
       },
       "GenderEnum": {
         "type": "string",
         "enum": [
           "MALE",
           "FEMALE"
-        ],
-        "minLength": 4,
-        "maxLength": 6
+        ]
       },
       "TitleEnum": {
         "type": "string",
@@ -2633,9 +2842,7 @@
           "IBU",
           "SDR",
           "SDRI"
-        ],
-        "minLength": 3,
-        "maxLength": 4
+        ]
       },
       "ReligionEnum": {
         "type": "string",
@@ -2648,9 +2855,7 @@
           "HINDU",
           "CONFUCIAN",
           "OTHER"
-        ],
-        "minLength": 5,
-        "maxLength": 15
+        ]
       },
       "JobEnum": {
         "type": "string",
@@ -2689,9 +2894,7 @@
           "CONSULTANT",
           "DESIGNER",
           "OTHER"
-        ],
-        "minLength": 5,
-        "maxLength": 35
+        ]
       },
       "EducationEnum": {
         "type": "string",
@@ -2704,9 +2907,7 @@
           "BACHELORS_DEGREE",
           "MASTERS_DEGREE",
           "PHD"
-        ],
-        "minLength": 3,
-        "maxLength": 25
+        ]
       },
       "UserHousingStatusEnum": {
         "type": "string",
@@ -3071,8 +3272,6 @@
       },
       "UserBusinessTypeCommonEnum": {
         "type": "string",
-        "minLength": 5,
-        "maxLength": 100,
         "enum": [
           "OTHER",
           "AGRICULTURE_HUNTING_FARMING_FACILITIES",
@@ -3315,8 +3514,6 @@
       },
       "UserIndustryCommonEnum": {
         "type": "string",
-        "minLength": 5,
-        "maxLength": 100,
         "enum": [
           "PRIVATE_PERSON_NAME",
           "PRIVATE_PERSON_NUMBERED",
@@ -3423,9 +3620,7 @@
       "UserSwiftCode": {
         "type": "string",
         "example": "BMRIIDJA",
-        "minLength": 3,
-        "maxLength": 10,
-        "description": "- BANK_JASA_JAKARTA = \"JAJSIDJ1\"  # Bank Jasa Jakarta\n- BPD_JAWA_TIMUR = \"PDJTIDJ1\"  # Bank Pembangunan Daerah Jawa Timur\n- BANK_MESTIKA = \"MEDHIDS1\"  # Bank Mestika\n- BANK_MUAMALAT = \"MUABIDJA\"  # Bank Muamalat\n- BANK_MULTIARTA_SENTOSA = \"BMSEIDJA\"  # Bank Multiarta Sentosa\n- BANK_NATIONALNOBU = \"LFIBIDJ1\"  # Bank Nationalnobu\n- BANK_NUSANTARA_PARAHYANGAN = \"NUPAIDJ6\"  # Bank Nusantara Parahyangan\n- BANK_SBI_INDONESIA = \"IDMOIDJ1\"  # Bank SBI Indonesia\n- BANK_SINARMAS = \"SBJKIDJA\"  # Bank Sinarmas\n- BPD_BENGKULU = \"PDBKIDJ1\"  # Bank Pembangunan Daerah Bengkulu\n- BPD_DAERAH_ISTIMEWA_YOGYAKARTA_DIY_UUS = \"SYYKIDJ1\"  # Bank Pembangunan Daerah Istimewa Yogyakarta (DIY) Unit Usaha Syariah\n- BPD_JATENG = \"PDJGIDJ1\"  # Bank Pembangunan Daerah Jawa Tengah\n- BPD_JATIM_UUS = \"SYJTIDJ1\"  # Bank Pembangunan Daerah Jawa Timur Unit Usaha Syariah\n- BPD_KALBAR = \"PDKBIDJ1\"  # Bank Pembangunan Daerah Kalimantan Barat\n- BPD_KALBAR_UUS = \"SYKBIDJ1\"  # Bank Pembangunan Daerah Kalimantan Barat Unit Usaha Syariah\n- BPD_KALSEL = \"PDKSIDJ1\"  # Bank Pembangunan Daerah Kalimantan Selatan\n- BPD_KALTENG = \"PDKGIDJ1\"  # Bank Pembangunan Daerah Kalimantan Tengah\n- BPD_KALTIM_UUS = \"SYKTIDJ1\"  # Bank Pembangunan Daerah Kalimantan Timur Unit Usaha Syariah\n- BPD_LAMPUNG = \"PDLPIDJ1\"  # Bank Pembangunan Daerah Lampung\n- BPD_NTT = \"PDNTIDJ1\"  # Bank Pembangunan Daerah Nusa Tenggara Timur\n- BPD_PAPUA = \"PDIJIDJ1\"  # Bank Pembangunan Daerah Papua\n- BPD_RIAU = \"PDRIIDJA\"  # Bank Pembangunan Daerah Riau\n- BPD_SULAWESI_TENGAH = \"PDWGIDJ1\"  # Bank Pembangunan Daerah Sulawesi Tengah\n- BPD_SULAWESI_TENGGARA = \"PDWRIDJ1\"  # Bank Pembangunan Daerah Sulawesi Tenggara\n- BPD_SULSELBAR_UUS = \"SYWSIDJ1\"  # Bank Pembangunan Daerah Sulawesi Selatan Unit Usaha Syariah\n- BPD_SULUT = \"PDWUIDJ1\"  # Bank Pembangunan Daerah Sulawesi Utara\n- BPD_SUMATERA_BARAT = \"PDSBIDSP\"  # Bank Pembangunan Daerah Sumatera Barat\n- BPD_SUMSEL = \"BSSPIDSP\"  # Bank Pembangunan Daerah Sumatera Selatan\n- BPD_SUMUT = \"PDSUIDJ1\"  # Bank Pembangunan Daerah Sumatera Utara\n- BPD_SUMUT_UUS = \"SYSUIDJ1\"  # Bank Pembangunan Daerah Sumatera Utara Unit Usaha Syariah\n- BTN = \"BTANIDJA\"  # Bank Tabungan Negara\n- BTN_SYARIAH = \"SYBTIDJ1\"  # Bank Tabungan Negara Syariah\n- CENTRATAMA_NASIONAL_BANK = \"CNBAIDJ1\"  # Centratama Nasional Bank\n- CITIBANK = \"CITIIDJX\"  # Citibank\n- DBS_INDONESIA = \"DBSBIDJA\"  # DBS Indonesia\n- BANK_IBK_INDONESIA = \"IBKOIDJA\"  # Bank IBK Indonesia\n- BANK_MITRANIAGA = \"MGABIDJ1\"  # Bank Mitraniaga\n- BANK_MIZUHO = \"MHCCIDJA\"  # Bank Mizuho\n- BANK_SINAR_HARAPAN_BALI = \"SIHBIDJ1\"  # Bank Sinar Harapan Bali\n- BANK_BNI_UUS = \"SYNIIDJ1\"  # Bank BNI Unit Usaha Syariah\n- BPD_ACEH = \"PDACIDJ1\"  # Bank Pembangunan Daerah Aceh\n- BANK_CIMB_NIAGA = \"BNIAIDJA\"  # Bank CIMB Niaga\n- BANK_DANAMON_INDONESIA = \"BDINIDJA\"  # Bank Danamon Indonesia\n- BANK_GANESHA = \"GNESIDJA\"  # Bank Ganesha\n- BANK_HANA = \"HNBNIDJA\"  # Bank Hana\n- BANK_MANDIRI = \"BMRIIDJA\"  # Bank Mandiri\n- BANK_MASPION = \"MASDIDJ1\"  # Bank Maspion\n- BANK_BNI_46 = \"BNINIDJA\"  # Bank BNI 46\n- BANK_MAYORA = \"MAYOIDJA\"  # Bank Mayora\n- BANK_OF_CHINA = \"BKCHIDJA\"  # Bank of China\n- BANK_ROYAL = \"ROYBIDJ1\"  # Bank Royal\n- BANK_VICTORIA = \"VICTIDJ1\"  # Bank Victoria\n- BANK_WOORI = \"HVBKIDJA\"  # Bank Woori\n- BPD_BANTEN = \"EKSTIDJ1\"  # Bank Pembangunan Daerah Banten\n- BPD_NTB = \"PDNBIDJ1\"  # Bank Pembangunan Daerah Nusa Tenggara Barat\n- BANK_FAMA = \"FAMAIDJ1\"  # Bank Fama\n- BANK_ARTA_NIAGA_KENCANA = \"ARNKIDJ1\"  # Bank Arta Niaga Kencana\n- BANK_BISNIS = \"BUSTIDJ1\"  # Bank Bisnis\n- BANK_PURBA_DANARTA = \"PUBAIDJ1\"  # Bank Purba Danarta\n- BANK_CAPITAL = \"BCIAIDJA\"  # Bank Capital\n- BANK_JABAR_BANTEN_SYARIAH = \"SYJBIDJ1\"  # Bank Jabar Banten Syariah\n- BANK_CHINATRUST = \"CTCBIDJA\"  # Bank Chinatrust\n- BANK_COMMONWEALTH = \"BICNIDJA\"  # Bank Commonwealth\n- BANK_INDEX_SELINDO = \"BIDXIDJA\"  # Bank Index Selindo\n- BANK_BRI_AGRONIAGA = \"AGTBIDJA\"  # Bank BRI Agroniaga\n- BANK_MAYAPADA_INTERNATIONAL = \"MAYAIDJA\"  # Bank Mayapada International\n- BANK_MEGA = \"MEGAIDJA\"  # Bank Mega\n- BNP_PARIBAS = \"BNPAIDJA\"  # BNP Paribas\n- BOT = \"BOTKIDJX\"  # Bank of Tokyo-Mitsubishi UFJ\n- INDONESIA_EXIM_BANK = \"LPEIIDJ1\"  # Indonesia Exim Bank\n- JP_MORGAN = \"CHASIDJX\"  # JP Morgan Chase Bank\n- HSBC = \"HSBCIDJA\"  # HSBC\n- ICBC = \"ICBKIDJA\"  # Industrial and Commercial Bank of China\n- KESAWAN = \"AWANIDJA\"  # Bank Kesawan\n- MAYBANK_INDONESIA = \"IBBKIDJA\"  # Maybank Indonesia\n- NAGARI_UUS = \"SYSBIDJ1\"  # Bank Nagari Unit Usaha Syariah\n- OCBC_NISP = \"NISPIDJA\"  # OCBC NISP\n- PANIN_SYARIAH = \"ARFAIDJ1\"  # Bank Panin Syariah\n- PT_BANK_HSBC_INDONESIA = \"EKONIDJA\"  # PT Bank HSBC Indonesia\n- PT_BANK_SHINHAN_INDONESIA = \"MEEKIDJ1\"  # PT Bank Shinhan Indonesia\n- PT_BANK_ACEH_SYARIAH = \"SYACIDJ1\"  # PT Bank Aceh Syariah\n- RABOBANK = \"RABOIDJA\"  # Rabobank\n- STANDARD_CHARTERED_BANK = \"SCBLIDJX\"  # Standard Chartered Bank\n- SYARIAH_BUKOPIN = \"SDOBIDJ1\"  # Bank Syariah Bukopin\n- SYARIAH_MEGA = \"BUTGIDJ1\"  # Bank Syariah Mega\n- UOB_BUANA = \"BBIJIDJA\"  # UOB Buana\n- BANK_DKI = \"BDKIIDJA\"  # Bank DKI\n- BANK_CENTRAL_ASIA_BCA = \"CENAIDJA\"  # Bank Central Asia (BCA)\n- BPD_SULSELBAR = \"PDWSIDJ1\"  # Bank Pembangunan Daerah Sulawesi Selatan Barat\n- BANK_JAGO = \"ATOSIDJ1\"  # Bank Jago\n- BANK_NEO_COMMERCE = \"YUDBIDJ1\"  # Bank Neo Commerce\n- BANK_SEABANK_INDONESIA = \"KSEBIDJ1\"  # Bank Seabank Indonesia\n- ALLO_BANK_INDONESIA = \"HRDAIDJ1\"  # Allo Bank Indonesia\n- BANK_AGRIS = \"AGSSIDJA\"  # Bank Agris\n- BPD_JAMBI_UUS = \"SYJMIDJ1\"  # Bank Pembangunan Daerah Jambi Unit Usaha Syariah\n- BTPN = \"BTPNIDJA\"  # BTPN\n- BANK_SYARIAH_INDONESIA = \"BSMDIDJA\"  # Bank Syariah Indonesia\n- RESONA_PERDANIA = \"BPIAIDJA\"  # Resona Perdania\n- ROYAL_BANK_OF_SCOTLAND_RBS = \"ABNAIDJA\"  # Royal Bank of Scotland (RBS)\n- SYARIAH_BRI = \"DJARIDJ1\"  # Bank Syariah BRI\n- BANK_ALADIN_SYARIAH = \"MBBEIDJA\"  # Bank Aladin Syariah\n- BANK_OKE_INDONESIA = \"RIPAIDJ1\"  # Bank Oke Indonesia\n",
+        "description": "- BANK_JASA_JAKARTA = \"JAJSIDJ1\"  # Bank Jasa Jakarta\n- BPD_JAWA_TIMUR = \"PDJTIDJ1\"  # Bank Pembangunan Daerah Jawa Timur\n- BANK_MESTIKA = \"MEDHIDS1\"  # Bank Mestika\n- BANK_MUAMALAT = \"MUABIDJA\"  # Bank Muamalat\n- BANK_MULTIARTA_SENTOSA = \"BMSEIDJA\"  # Bank Multiarta Sentosa\n- BANK_NATIONALNOBU = \"LFIBIDJ1\"  # Bank Nationalnobu\n- BANK_NUSANTARA_PARAHYANGAN = \"NUPAIDJ6\"  # Bank Nusantara Parahyangan\n- BANK_SBI_INDONESIA = \"IDMOIDJ1\"  # Bank SBI Indonesia\n- BANK_SINARMAS = \"SBJKIDJA\"  # Bank Sinarmas\n- BCA SYARIAH = \"SYCAIDJ1\" # BCA Syariah,\n- BPD_BENGKULU = \"PDBKIDJ1\"  # Bank Pembangunan Daerah Bengkulu\n- BPD_DAERAH_ISTIMEWA_YOGYAKARTA_DIY_UUS = \"SYYKIDJ1\"  # Bank Pembangunan Daerah Istimewa Yogyakarta (DIY) Unit Usaha Syariah\n- BPD_JATENG = \"PDJGIDJ1\"  # Bank Pembangunan Daerah Jawa Tengah\n- BPD_JATIM_UUS = \"SYJTIDJ1\"  # Bank Pembangunan Daerah Jawa Timur Unit Usaha Syariah\n- BPD_KALBAR = \"PDKBIDJ1\"  # Bank Pembangunan Daerah Kalimantan Barat\n- BPD_KALBAR_UUS = \"SYKBIDJ1\"  # Bank Pembangunan Daerah Kalimantan Barat Unit Usaha Syariah\n- BPD_KALSEL = \"PDKSIDJ1\"  # Bank Pembangunan Daerah Kalimantan Selatan\n- BPD_KALTENG = \"PDKGIDJ1\"  # Bank Pembangunan Daerah Kalimantan Tengah\n- BPD_KALTIM_UUS = \"SYKTIDJ1\"  # Bank Pembangunan Daerah Kalimantan Timur Unit Usaha Syariah\n- BPD_LAMPUNG = \"PDLPIDJ1\"  # Bank Pembangunan Daerah Lampung\n- BPD_NTT = \"PDNTIDJ1\"  # Bank Pembangunan Daerah Nusa Tenggara Timur\n- BPD_PAPUA = \"PDIJIDJ1\"  # Bank Pembangunan Daerah Papua\n- BPD_RIAU = \"PDRIIDJA\"  # Bank Pembangunan Daerah Riau\n- BPD_SULAWESI_TENGAH = \"PDWGIDJ1\"  # Bank Pembangunan Daerah Sulawesi Tengah\n- BPD_SULAWESI_TENGGARA = \"PDWRIDJ1\"  # Bank Pembangunan Daerah Sulawesi Tenggara\n- BPD_SULSELBAR_UUS = \"SYWSIDJ1\"  # Bank Pembangunan Daerah Sulawesi Selatan Unit Usaha Syariah\n- BPD_SULUT = \"PDWUIDJ1\"  # Bank Pembangunan Daerah Sulawesi Utara\n- BPD_SUMATERA_BARAT = \"PDSBIDSP\"  # Bank Pembangunan Daerah Sumatera Barat\n- BPD_SUMSEL = \"BSSPIDSP\"  # Bank Pembangunan Daerah Sumatera Selatan\n- BPD_SUMUT = \"PDSUIDJ1\"  # Bank Pembangunan Daerah Sumatera Utara\n- BPD_SUMUT_UUS = \"SYSUIDJ1\"  # Bank Pembangunan Daerah Sumatera Utara Unit Usaha Syariah\n- BTN = \"BTANIDJA\"  # Bank Tabungan Negara\n- BTN_SYARIAH = \"SYBTIDJ1\"  # Bank Tabungan Negara Syariah\n- CENTRATAMA_NASIONAL_BANK = \"CNBAIDJ1\"  # Centratama Nasional Bank\n- CITIBANK = \"CITIIDJX\"  # Citibank\n- DBS_INDONESIA = \"DBSBIDJA\"  # DBS Indonesia\n- BANK_IBK_INDONESIA = \"IBKOIDJA\"  # Bank IBK Indonesia\n- BANK_MITRANIAGA = \"MGABIDJ1\"  # Bank Mitraniaga\n- BANK_MIZUHO = \"MHCCIDJA\"  # Bank Mizuho\n- BANK_SINAR_HARAPAN_BALI = \"SIHBIDJ1\"  # Bank Sinar Harapan Bali\n- BANK_BNI_UUS = \"SYNIIDJ1\"  # Bank BNI Unit Usaha Syariah\n- BPD_ACEH = \"PDACIDJ1\"  # Bank Pembangunan Daerah Aceh\n- BANK_CIMB_NIAGA = \"BNIAIDJA\"  # Bank CIMB Niaga\n- BANK_DANAMON_INDONESIA = \"BDINIDJA\"  # Bank Danamon Indonesia\n- BANK_GANESHA = \"GNESIDJA\"  # Bank Ganesha\n- BANK_HANA = \"HNBNIDJA\"  # Bank Hana\n- BANK_MANDIRI = \"BMRIIDJA\"  # Bank Mandiri\n- BANK_MASPION = \"MASDIDJ1\"  # Bank Maspion\n- BANK_BNI_46 = \"BNINIDJA\"  # Bank BNI 46\n- BANK_MAYORA = \"MAYOIDJA\"  # Bank Mayora\n- BANK_OF_CHINA = \"BKCHIDJA\"  # Bank of China\n- BANK_ROYAL = \"ROYBIDJ1\"  # Bank Royal\n- BANK_VICTORIA = \"VICTIDJ1\"  # Bank Victoria\n- BANK_WOORI = \"HVBKIDJA\"  # Bank Woori\n- BPD_BANTEN = \"EKSTIDJ1\"  # Bank Pembangunan Daerah Banten\n- BPD_NTB = \"PDNBIDJ1\"  # Bank Pembangunan Daerah Nusa Tenggara Barat\n- BANK_FAMA = \"FAMAIDJ1\"  # Bank Fama\n- BANK_ARTA_NIAGA_KENCANA = \"ARNKIDJ1\"  # Bank Arta Niaga Kencana\n- BANK_BISNIS = \"BUSTIDJ1\"  # Bank Bisnis\n- BANK_PURBA_DANARTA = \"PUBAIDJ1\"  # Bank Purba Danarta\n- BANK_CAPITAL = \"BCIAIDJA\"  # Bank Capital\n- BANK_JABAR_BANTEN_SYARIAH = \"SYJBIDJ1\"  # Bank Jabar Banten Syariah\n- BANK_CHINATRUST = \"CTCBIDJA\"  # Bank Chinatrust\n- BANK_COMMONWEALTH = \"BICNIDJA\"  # Bank Commonwealth\n- BANK_INDEX_SELINDO = \"BIDXIDJA\"  # Bank Index Selindo\n- BANK_BRI_AGRONIAGA = \"AGTBIDJA\"  # Bank BRI Agroniaga\n- BANK_MAYAPADA_INTERNATIONAL = \"MAYAIDJA\"  # Bank Mayapada International\n- BANK_MEGA = \"MEGAIDJA\"  # Bank Mega\n- BNP_PARIBAS = \"BNPAIDJA\"  # BNP Paribas\n- BOT = \"BOTKIDJX\"  # Bank of Tokyo-Mitsubishi UFJ\n- INDONESIA_EXIM_BANK = \"LPEIIDJ1\"  # Indonesia Exim Bank\n- JP_MORGAN = \"CHASIDJX\"  # JP Morgan Chase Bank\n- HSBC = \"HSBCIDJA\"  # HSBC\n- ICBC = \"ICBKIDJA\"  # Industrial and Commercial Bank of China\n- KESAWAN = \"AWANIDJA\"  # Bank Kesawan\n- MAYBANK_INDONESIA = \"IBBKIDJA\"  # Maybank Indonesia\n- NAGARI_UUS = \"SYSBIDJ1\"  # Bank Nagari Unit Usaha Syariah\n- OCBC_NISP = \"NISPIDJA\"  # OCBC NISP\n- PANIN_SYARIAH = \"ARFAIDJ1\"  # Bank Panin Syariah\n- PT_BANK_HSBC_INDONESIA = \"EKONIDJA\"  # PT Bank HSBC Indonesia\n- PT_BANK_SHINHAN_INDONESIA = \"MEEKIDJ1\"  # PT Bank Shinhan Indonesia\n- PT_BANK_ACEH_SYARIAH = \"SYACIDJ1\"  # PT Bank Aceh Syariah\n- RABOBANK = \"RABOIDJA\"  # Rabobank\n- STANDARD_CHARTERED_BANK = \"SCBLIDJX\"  # Standard Chartered Bank\n- SYARIAH_BUKOPIN = \"SDOBIDJ1\"  # Bank Syariah Bukopin\n- SYARIAH_MEGA = \"BUTGIDJ1\"  # Bank Syariah Mega\n- UOB_BUANA = \"BBIJIDJA\"  # UOB Buana\n- BANK_DKI = \"BDKIIDJA\"  # Bank DKI\n- BANK_CENTRAL_ASIA_BCA = \"CENAIDJA\"  # Bank Central Asia (BCA)\n- BPD_SULSELBAR = \"PDWSIDJ1\"  # Bank Pembangunan Daerah Sulawesi Selatan Barat\n- BANK_JAGO = \"ATOSIDJ1\"  # Bank Jago\n- BANK_NEO_COMMERCE = \"YUDBIDJ1\"  # Bank Neo Commerce\n- BANK_SEABANK_INDONESIA = \"KSEBIDJ1\"  # Bank Seabank Indonesia\n- ALLO_BANK_INDONESIA = \"HRDAIDJ1\"  # Allo Bank Indonesia\n- BANK_AGRIS = \"AGSSIDJA\"  # Bank Agris\n- BPD_JAMBI_UUS = \"SYJMIDJ1\"  # Bank Pembangunan Daerah Jambi Unit Usaha Syariah\n- BTPN = \"BTPNIDJA\"  # BTPN\n- BANK_SYARIAH_INDONESIA = \"BSMDIDJA\"  # Bank Syariah Indonesia\n- RESONA_PERDANIA = \"BPIAIDJA\"  # Resona Perdania\n- ROYAL_BANK_OF_SCOTLAND_RBS = \"ABNAIDJA\"  # Royal Bank of Scotland (RBS)\n- SYARIAH_BRI = \"DJARIDJ1\"  # Bank Syariah BRI\n- BANK_ALADIN_SYARIAH = \"MBBEIDJA\"  # Bank Aladin Syariah\n- BANK_OKE_INDONESIA = \"RIPAIDJ1\"  # Bank Oke Indonesia\n",
         "enum": [
           "JAJSIDJ1",
           "PDJTIDJ1",
@@ -3436,8 +3631,10 @@
           "NUPAIDJ6",
           "IDMOIDJ1",
           "SBJKIDJA",
+          "SYCAIDJ1",
           "PDBKIDJ1",
           "SYYKIDJ1",
+          "PDJMIDJ1",
           "PDJGIDJ1",
           "SYJTIDJ1",
           "PDKBIDJ1",
@@ -3496,6 +3693,39 @@
           "MEGAIDJA",
           "BNPAIDJA",
           "BOTKIDJX",
+          "PDJBIDJA",
+          "INPBIDJ1",
+          "BUMIIDJA",
+          "CICTIDJA",
+          "SWBAIDJ1",
+          "BBBAIDJA",
+          "BRINIDJA",
+          "BDIPIDJ1",
+          "SWAGIDJ1",
+          "ANZBIDJX",
+          "ARTGIDJA",
+          "BBUKIDJA",
+          "SYBDIDJ1",
+          "BWKIIDJA",
+          "PDYKIDJ1",
+          "SYRIIDJ1",
+          "SYSSIDJ1",
+          "SYNBIDJ1",
+          "LMANIDJ1",
+          "SYDKIDJ1",
+          "DEUTIDJA",
+          "ANTDIDJD",
+          "BBAIIDJA",
+          "PINBIDJA",
+          "PMASIDJ1",
+          "ABALIDBS",
+          "SYJGIDJ1",
+          "SYKSIDJ1",
+          "PDKTIDJ1",
+          "PDMLIDJ1",
+          "BKKBIDJA",
+          "LOMAIDJ1",
+          "BOFAID2X",
           "LPEIIDJ1",
           "CHASIDJX",
           "HSBCIDJA",
@@ -3654,7 +3884,6 @@
           "email",
           "mother_maiden_name",
           "marital_status",
-          "title",
           "domicile",
           "religion",
           "gender",
@@ -3701,10 +3930,10 @@
             "type": "string",
             "format": "email",
             "description": "Email address of authorised signatory",
-            "minLength": 5,
-            "maxLength": 64
+            "minLength": 6,
+            "maxLength": 128
           },
-          "motherMaidenName": {
+          "mother_maiden_name": {
             "type": "string",
             "description": "Mother maiden name of authorised signatory",
             "minLength": 2,
@@ -3759,16 +3988,13 @@
           "documents": {
             "type": "object",
             "required": [
-              "ktp",
-              "npwp"
+              "ktp"
             ],
             "properties": {
               "ktp": {
                 "type": "object",
                 "required": [
-                  "number",
-                  "issuing_city",
-                  "expiry_date"
+                  "number"
                 ],
                 "properties": {
                   "number": {
@@ -3812,9 +4038,6 @@
               },
               "npwp": {
                 "type": "object",
-                "required": [
-                  "number"
-                ],
                 "properties": {
                   "number": {
                     "type": "string",
@@ -3863,11 +4086,13 @@
               "API_VALIDATION_ERROR",
               "CREDIT_CARD_DATA_ERROR",
               "INVALID_JSON_FORMAT",
-              "USER_NOT_FOUND",
-              "USER_ID_NOT_FOUND",
-              "LOAN_ID_NOT_FOUND",
-              "NO_ACTIVE_USER_FOUND",
-              "DOCUMENT_NOT_FOUND"
+              "UNREGISTERED_PRODUCT_ERROR",
+              "PRODUCT_NOT_ACTIVE",
+              "NO_PAYMENT_CHANNEL_FOUND",
+              "INVALID_USER_ID",
+              "FILE_TYPE_UNSUPPORTED",
+              "INVALID_DOCUMENT_ID",
+              "BIOMETRIC_VERIFICATION_ERROR"
             ]
           },
           "message": {
@@ -3893,7 +4118,8 @@
               "INVALID_CREDENTIAL",
               "EXPIRED_SESSION",
               "AUTHORIZATION_NOT_FOUND",
-              "KEY_NOT_VALID"
+              "KEY_NOT_VALID",
+              "CREDIT_CARD_CHARGE_NOT_FOUND_ERROR"
             ]
           },
           "message": {
@@ -3936,7 +4162,13 @@
             "type": "string",
             "enum": [
               "PARTNER_NOT_FOUND",
-              "CREDIT_CARD_CHARGE_NOT_FOUND_ERROR"
+              "USER_NOT_FOUND",
+              "USER_ID_NOT_FOUND",
+              "LOAN_ID_NOT_FOUND",
+              "UNIQUE_ID_NOT_FOUND",
+              "NO_ACTIVE_USER_FOUND",
+              "DOCUMENT_NOT_FOUND",
+              "CREDIT_HISTORY_NOT_FOUND"
             ]
           },
           "message": {
@@ -3957,8 +4189,11 @@
           "error_code": {
             "type": "string",
             "enum": [
+              "DUPLICATE_REFERENCE_ID",
+              "FILE_TOO_BIG",
+              "WRONG_EMAIL_FORMAT",
               "DUPLICATE_EMAIL",
-              "FILE_TOO_BIG"
+              "DUPLICATE_DATA"
             ]
           },
           "message": {
@@ -4091,6 +4326,15 @@
           "example": "1234567890abcdef-1234567890abcdef-1234567890abcdef"
         }
       },
+      "loanUniqueId": {
+        "in": "path",
+        "name": "loanUniqueId",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "example": "1234567890abcdef-1234567890abcdef-1234567890abcdef:123abcdef4578:1234567890abcdef-1234567890abcdef-1234567890abcdef"
+        }
+      },
       "callbackTitle": {
         "in": "path",
         "name": "callbackTitle",
@@ -4102,7 +4346,8 @@
             "user-score",
             "loan-status",
             "bnpl-status",
-            "credit-history-doc"
+            "credit-history-doc",
+            "disbursement-creation"
           ]
         },
         "required": true
@@ -4147,7 +4392,13 @@
         "schema": {
           "type": "string",
           "enum": [
-            "all"
+            "all",
+            "approved_by_partner",
+            "engine_check_passed",
+            "created",
+            "rejected",
+            "blocked",
+            "inactive"
           ]
         }
       },
@@ -4165,18 +4416,18 @@
         "name": "pageNumber",
         "in": "query",
         "description": "Status values that need to be considered for filter",
-        "required": true,
+        "required": false,
         "explode": true,
         "schema": {
           "type": "number",
-          "default": 1
+          "default": 0
         }
       },
       "pageSize": {
         "name": "pageSize",
         "in": "query",
         "description": "Status values that need to be considered for filter",
-        "required": true,
+        "required": false,
         "explode": true,
         "schema": {
           "type": "number",
@@ -4313,6 +4564,14 @@
         "required": true,
         "schema": {
           "type": "number"
+        }
+      },
+      "uniqueId": {
+        "in": "path",
+        "name": "uniqueId",
+        "required": true,
+        "schema": {
+          "type": "string"
         }
       }
     },

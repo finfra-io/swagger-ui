@@ -277,6 +277,26 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error500Response'
+  /api/core/users/score-report:
+    post:
+      security:
+        - BearerAuth: []
+      tags:
+        - Borrower
+      operationId: getBorrowerCreditScore
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/scoreReportRequest'
+      responses:
+        200:
+          description: A borrower credit score
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scoreReport'
   /api/core/users/{userId}/approve:
     post:
       security:
@@ -540,7 +560,7 @@ paths:
   
   /api/core/ftm/users/{endpointKey}/{userId}:
     post:
-      summary: partner need to be verified and credit score obtained before creating a loan or getting a credit score list
+      summary: partner need to be verified and credit score obtained before creating a loan or getting a credit score list (will deprecated at august 2024)
       tags:
         - Credit Score
       parameters:
@@ -553,7 +573,21 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CheckUserHub'
-
+  /api/core/users/{userId}/{endpointKey}:
+    post:
+      summary: partner need to be verified and credit score obtained before creating a loan or getting a credit score list (new version)
+      tags:
+        - Credit Score
+      parameters:
+        - $ref: '#/components/parameters/endpointKey'
+        - $ref: '#/components/parameters/userId'
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureFlag'
   /api/core/loans:
     get:
       tags:
@@ -652,6 +686,29 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error400Response'
 
+  /api/core/loans/{loanUniqueId}/disbursement:
+    post:
+      security:
+        - BearerAuth: []
+      tags:
+        - Finfra Disbursement Services
+      parameters:
+        - $ref: '#/components/parameters/loanUniqueId'
+      summary: Disburse loan
+      description: This endpoint will initiate disburse the loan money
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureFlag'
+        400:
+          description: example error 400 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400Response'
   /errors/{error_code}:
     get:
       security: []
@@ -722,6 +779,18 @@ paths:
 
 components:
   schemas:
+    FeatureFlag:
+      type: object
+      required:
+        - key
+        - value
+      properties:
+        key:
+          type: string
+          example: 'test-feature-flag'
+        value:
+          type: boolean
+          example: false
     UserList:
       properties:
         users:
@@ -767,27 +836,66 @@ components:
           type: string
           example: '2023-09-04T06:19:06.525+0000'
 
+    CheckUserHub:
+      type: object
+      properties:
+        id:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        status:
+          type: string
+          enum: [ENGINE_CHECK_PASSED, ENGINE_CHECK_FAILED, OTHER_STATUS]
+        checking:
+          type: object
+          properties:
+            status:
+              type: string
+              enum: [SUCCESS, FAILED]
+            reason:
+              type: string
+
+    scoreReportRequest:
+      type: object
+      required:
+        - user_id
+      properties:
+        userId:
+          type: string
+          example: '1234567890abcdef-1234567890abcdef-1234567890abcdef'
+
+    scoreReport:
+      type: object
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        nik:
+          type: string
+        pdf_clik_link:
+          type: string
+        pdf_afpi_link:
+          type: string
+
     CreateUserRequest:
       type: object
       required:
         - type
         - authorised_signatory
-        - swift_code
       properties:
         type:
           type: string
           enum:
             - PERSONAL
             - BUSINESS
-          minLength: 8
-          maxLength: 8
+          example: 'BUSINESS'
         entity:
           $ref: '#/components/schemas/UserEntity'
         authorised_signatory:
           $ref: '#/components/schemas/UserAuthorisedSignatory'
-        swift_code:
-          $ref: '#/components/schemas/UserSwiftCode'
-          
     UpdateUserRequest:
       type: object
       required:
@@ -904,26 +1012,25 @@ components:
           $ref: '#/components/schemas/UserHousingStatusEnum'
         source_of_fund:
           $ref: '#/components/schemas/UserSourceOfFundEnum'
-    CheckUserHub:
+
+    CreditHistoryRequest:
       type: object
+      required:
+        - nik
+        - mobileNumber
       properties:
-        id:
+        nik:
           type: string
-        firstName:
+          minLength: 16
+          maxLength: 16
+        mobileNumber:
           type: string
-        lastName:
-          type: string
-        status:
-          type: string
-          enum: [ENGINE_CHECK_PASSED, ENGINE_CHECK_FAILED, OTHER_STATUS]
-        checking:
-          type: object
-          properties:
-            status:
-              type: string
-              enum: [SUCCESS, FAILED]
-            reason:
-              type: string
+          description: 'Phone number of the management representative in E.164 format'
+          pattern: '^\+62\d{1,14}$'
+          minLength: 10
+          maxLength: 20
+          example: '+6281274384381'
+
     LoanList:
       properties:
         data:
@@ -981,12 +1088,12 @@ components:
               type: number
             risk_level:
               $ref: '#/components/schemas/LoanRiskLevel'
-    
+
     Loan:
       type: object
       required:
         - id
-        - partner_id
+        - partnerId
         - user
         - product
         - amount
@@ -994,13 +1101,13 @@ components:
       properties:
         id:
           type: string
-          example: '7097bbbb-1ffa-47aa-8cb4-ad01e9e73762'
-        partner_id:
+          example: '6544de568f002963846527e0'
+        partnerId:
           type: string
           example: '7097bbbb-1ffa-47aa-8cb4-ad01e9e73762'
         userId:
           type: string
-          example: '7097bbbb-1ffa-47aa-8cb4-ad01e9e73762'
+          example: '6544de568f002963846527e0'
         product:
           $ref: '#/components/schemas/LoanProduct'
         amount:
@@ -1033,14 +1140,26 @@ components:
         - HIGH
         - VERY_HIGH
         - NOT_AVAILABLE
-      minLength: 3
-      maxLength: 20
     LoanProduct:
       type: string
-      minLength: 7
-      maxLength: 50
       example: finfra_sandbox_wr_IL_weekly
       enum:
+        - finfra_stg_dev_wr_spl
+        - finfra_stg_dev_wr_il_weekly
+        - finfra_stg_dev_wr_il_biweekly
+        - finfra_stg_dev_wr_il_monthly
+        - finfra_stg_dev_ir_spl
+        - finfra_stg_dev_ir_il_weekly
+        - finfra_stg_dev_ir_il_biweekly
+        - finfra_stg_dev_ir_il_monthly
+        - finfra_stg_dev_pf_spl
+        - finfra_stg_dev_pf_il_weekly
+        - finfra_stg_dev_pf_il_biweekly
+        - finfra_stg_dev_pf_il_monthly
+        - finfra_stg_dev_bnpl_spl
+        - finfra_stg_dev_bnpl_il_weekly
+        - finfra_stg_dev_bnpl_il_biweekly
+        - finfra_stg_dev_bnpl_il_monthly
         - finfra_sandbox_wr_spl
         - finfra_sandbox_wr_IL_weekly
         - finfra_sandbox_wr_IL_biweekly
@@ -1054,6 +1173,7 @@ components:
         - finfra_sandbox_pf_IL_biweekly
         - finfra_sandbox_pf_IL_monthly
         - main_finfra_spl_bnpl_loan_creation_no_login
+        - finfra_sandbox_bnpl_spl
         - finfra_sandbox_bnpl_IL_weekly
         - finfra_sandbox_bnpl_IL_biweekly
         - finfra_sandbox_bnpl_IL_monthly
@@ -1070,75 +1190,103 @@ components:
         - finfra_staging_pf_IL_weekly
         - finfra_staging_pf_IL_biweekly
         - finfra_staging_pf_IL_monthly
+        - finfra_staging_bnpl_spl
         - finfra_staging_bnpl_IL_weekly
         - finfra_staging_bnpl_IL_biweekly
         - finfra_staging_bnpl_IL_monthly
+        - finfra_production_wr_spl
+        - finfra_production_wr_IL_weekly
+        - finfra_production_wr_IL_biweekly
+        - finfra_production_wr_IL_monthly
+        - finfra_production_ir_spl
+        - finfra_production_ir_IL_weekly
+        - finfra_production_ir_IL_biweekly
+        - finfra_production_ir_IL_monthly
+        - finfra_production_pf_spl
+        - finfra_production_pf_IL_weekly
+        - finfra_production_pf_IL_biweekly
+        - finfra_production_pf_IL_monthly
+        - finfra_production_bnpl_spl
+        - finfra_production_bnpl_IL_weekly
+        - finfra_production_bnpl_IL_biweekly
+        - finfra_production_bnpl_IL_monthly
 
     CreateLoanRequest:
       type: object
-      required:
-        - product
-        - requested_amount
-        - term
-        - fields
+      oneOf:
+        - required:
+            - term
+          properties:
+            due_date:
+              not: {}
+        - required:
+            - due_date
+          properties:
+            term:
+              not: {}
       properties:
         endpoint_key:
           $ref: '#/components/schemas/LoanProduct'
         requested_amount:
           type: number
-          minimum: 1
           example: 1200000
         term:
           type: number
-          minimum: 1
           example: 120
+        due_date:
+          type: string
+          example: '2099-11-01'
+          format: date
+        get_details:
+          type: boolean
+          example: true
         fields:
           type: object
           properties:
             annual_interest_rate:
               type: number
-              minimum: 1
               nullable: true
             disbursement_fee:
               type: number
-              minimum: 0
               nullable: true
             cs_payment_day:
               type: number
-              minimum: 0
               nullable: true
             request_effective_on:
               type: string
               nullable: true
             grace_term:
               type: number
-              minimum: 0
               nullable: true
             interest_fee:
               type: number
-              minimum: 0
               nullable: true
             partner_risk_level:
               $ref: '#/components/schemas/LoanRiskLevel'
 
+      required:
+        - product
+        - requested_amount
+        - fields
+
     CreateBnplRequest:
       type: object
       required:
+        - product
         - amount
         - description
         - term
       properties:
+        endpoint_key:
+          $ref: '#/components/schemas/LoanProduct'
         amount:
           type: number
           example: 1200000
-          minimum: 1
         description:
           type: string
-          minLength: 1
           example: '0.3,null,null,LOW'
         term:
           type: number
-          minimum: 1
           example: 120
 
     GetAccessToken:
@@ -1160,28 +1308,9 @@ components:
           format: binary
         type:
           type: string
-          description: |
-            enum:
-            - KTP
-            - SELFIE
-            - NPWP
-            - NPWP_COMPANY
-            - LOAN_AGREEMENT
-            - INVOICE_FINANCING
-            - CREDIT_HISTORY
-            - TRANSACTION_HISTORY
-            - OTHER
-          enum:
-            - KTP
-            - SELFIE
-            - NPWP
-            - NPWP_COMPANY
-            - LOAN_AGREEMENT
-            - INVOICE_FINANCING
-            - CREDIT_HISTORY
-            - TRANSACTION_HISTORY
-            - OTHER
         reference_id:
+          type: string
+        user_id:
           type: string
         description:
           type: string
@@ -1650,8 +1779,6 @@ components:
         - OTHER
     CountryCode:
       type: string
-      minLength: 2
-      maxLength: 4
       enum:
         - AF
         - AX
@@ -1914,15 +2041,11 @@ components:
         - MARRIED
         - WIDOWER
         - WIDOW
-      minLength: 5
-      maxLength: 10
     GenderEnum:
       type: string
       enum:
         - MALE
         - FEMALE
-      minLength: 4
-      maxLength: 6
     TitleEnum:
       type: string
       description: |
@@ -1935,8 +2058,6 @@ components:
         - IBU
         - SDR
         - SDRI
-      minLength: 3
-      maxLength: 4
     ReligionEnum:
       type: string
       description: |
@@ -1955,8 +2076,6 @@ components:
         - HINDU
         - CONFUCIAN
         - OTHER
-      minLength: 5
-      maxLength: 15
     JobEnum:
       type: string
       description: |
@@ -2027,8 +2146,6 @@ components:
         - CONSULTANT
         - DESIGNER
         - OTHER
-      minLength: 5
-      maxLength: 35
     EducationEnum:
       type: string
       description: |
@@ -2048,8 +2165,6 @@ components:
         - BACHELORS_DEGREE
         - MASTERS_DEGREE
         - PHD
-      minLength: 3
-      maxLength: 25
     UserHousingStatusEnum:
       type: string
       description: |
@@ -2654,8 +2769,6 @@ components:
           example: '3275062309928971'
     UserBusinessTypeCommonEnum:
       type: string
-      minLength: 5
-      maxLength: 100
       enum:
         - OTHER
         - AGRICULTURE_HUNTING_FARMING_FACILITIES
@@ -2896,8 +3009,6 @@ components:
         - OTHERS_OTHERS
     UserIndustryCommonEnum:
       type: string
-      minLength: 5
-      maxLength: 100
       enum:
         - PRIVATE_PERSON_NAME
         - PRIVATE_PERSON_NUMBERED
@@ -2997,8 +3108,6 @@ components:
     UserSwiftCode:
       type: string
       example: 'BMRIIDJA'
-      minLength: 3
-      maxLength: 10
       description: |
         - BANK_JASA_JAKARTA = "JAJSIDJ1"  # Bank Jasa Jakarta
         - BPD_JAWA_TIMUR = "PDJTIDJ1"  # Bank Pembangunan Daerah Jawa Timur
@@ -3009,6 +3118,7 @@ components:
         - BANK_NUSANTARA_PARAHYANGAN = "NUPAIDJ6"  # Bank Nusantara Parahyangan
         - BANK_SBI_INDONESIA = "IDMOIDJ1"  # Bank SBI Indonesia
         - BANK_SINARMAS = "SBJKIDJA"  # Bank Sinarmas
+        - BCA SYARIAH = "SYCAIDJ1" # BCA Syariah,
         - BPD_BENGKULU = "PDBKIDJ1"  # Bank Pembangunan Daerah Bengkulu
         - BPD_DAERAH_ISTIMEWA_YOGYAKARTA_DIY_UUS = "SYYKIDJ1"  # Bank Pembangunan Daerah Istimewa Yogyakarta (DIY) Unit Usaha Syariah
         - BPD_JATENG = "PDJGIDJ1"  # Bank Pembangunan Daerah Jawa Tengah
@@ -3112,8 +3222,10 @@ components:
         - NUPAIDJ6
         - IDMOIDJ1
         - SBJKIDJA
+        - SYCAIDJ1
         - PDBKIDJ1
         - SYYKIDJ1
+        - PDJMIDJ1
         - PDJGIDJ1
         - SYJTIDJ1
         - PDKBIDJ1
@@ -3172,6 +3284,39 @@ components:
         - MEGAIDJA
         - BNPAIDJA
         - BOTKIDJX
+        - PDJBIDJA
+        - INPBIDJ1
+        - BUMIIDJA
+        - CICTIDJA
+        - SWBAIDJ1
+        - BBBAIDJA
+        - BRINIDJA
+        - BDIPIDJ1
+        - SWAGIDJ1
+        - ANZBIDJX
+        - ARTGIDJA
+        - BBUKIDJA
+        - SYBDIDJ1
+        - BWKIIDJA
+        - PDYKIDJ1
+        - SYRIIDJ1
+        - SYSSIDJ1
+        - SYNBIDJ1
+        - LMANIDJ1
+        - SYDKIDJ1
+        - DEUTIDJA
+        - ANTDIDJD
+        - BBAIIDJA
+        - PINBIDJA
+        - PMASIDJ1
+        - ABALIDBS
+        - SYJGIDJ1
+        - SYKSIDJ1
+        - PDKTIDJ1
+        - PDMLIDJ1
+        - BKKBIDJA
+        - LOMAIDJ1
+        - BOFAID2X
         - LPEIIDJ1
         - CHASIDJX
         - HSBCIDJA
@@ -3304,7 +3449,6 @@ components:
         - email
         - mother_maiden_name
         - marital_status
-        - title
         - domicile
         - religion
         - gender
@@ -3346,9 +3490,9 @@ components:
           type: string
           format: email
           description: 'Email address of authorised signatory'
-          minLength: 5
-          maxLength: 64
-        motherMaidenName:
+          minLength: 6
+          maxLength: 128
+        mother_maiden_name:
           type: string
           description: 'Mother maiden name of authorised signatory'
           minLength: 2
@@ -3386,14 +3530,11 @@ components:
           type: object
           required:
             - ktp
-            - npwp
           properties:
             ktp:
               type: object
               required:
                 - number
-                - issuing_city
-                - expiry_date
               properties:
                 number:
                   type: string
@@ -3427,8 +3568,6 @@ components:
                   minLength: 5
             npwp:
               type: object
-              required:
-                - number
               properties:
                 number:
                   type: string
@@ -3452,6 +3591,8 @@ components:
         source_of_fund:
           $ref: '#/components/schemas/UserSourceOfFundEnum'
 
+    
+
     Error400Response:
       type: object
       required:
@@ -3464,11 +3605,13 @@ components:
             - API_VALIDATION_ERROR
             - CREDIT_CARD_DATA_ERROR
             - INVALID_JSON_FORMAT
-            - USER_NOT_FOUND
-            - USER_ID_NOT_FOUND
-            - LOAN_ID_NOT_FOUND
-            - NO_ACTIVE_USER_FOUND
-            - DOCUMENT_NOT_FOUND
+            - UNREGISTERED_PRODUCT_ERROR
+            - PRODUCT_NOT_ACTIVE
+            - NO_PAYMENT_CHANNEL_FOUND
+            - INVALID_USER_ID
+            - FILE_TYPE_UNSUPPORTED
+            - INVALID_DOCUMENT_ID
+            - BIOMETRIC_VERIFICATION_ERROR
         message:
           type: string
         errors:
@@ -3488,6 +3631,7 @@ components:
             - EXPIRED_SESSION
             - AUTHORIZATION_NOT_FOUND
             - KEY_NOT_VALID
+            - CREDIT_CARD_CHARGE_NOT_FOUND_ERROR
         message:
           type: string
         errors:
@@ -3516,7 +3660,13 @@ components:
           type: string
           enum:
             - PARTNER_NOT_FOUND
-            - CREDIT_CARD_CHARGE_NOT_FOUND_ERROR
+            - USER_NOT_FOUND
+            - USER_ID_NOT_FOUND
+            - LOAN_ID_NOT_FOUND
+            - UNIQUE_ID_NOT_FOUND
+            - NO_ACTIVE_USER_FOUND
+            - DOCUMENT_NOT_FOUND
+            - CREDIT_HISTORY_NOT_FOUND
         message:
           type: string
         errors:
@@ -3530,8 +3680,11 @@ components:
         error_code:
           type: string
           enum:
-            - DUPLICATE_EMAIL
+            - DUPLICATE_REFERENCE_ID
             - FILE_TOO_BIG
+            - WRONG_EMAIL_FORMAT
+            - DUPLICATE_EMAIL
+            - DUPLICATE_DATA
         message:
           type: string
     Error415Response:
@@ -3621,6 +3774,13 @@ components:
       schema:
         type: string
         example: '1234567890abcdef-1234567890abcdef-1234567890abcdef'
+    loanUniqueId:
+      in: path
+      name: loanUniqueId
+      required: true
+      schema:
+        type: string
+        example: '1234567890abcdef-1234567890abcdef-1234567890abcdef:123abcdef4578:1234567890abcdef-1234567890abcdef-1234567890abcdef'
     callbackTitle:
       in: path
       name: callbackTitle
@@ -3633,6 +3793,7 @@ components:
           - loan-status
           - bnpl-status
           - credit-history-doc
+          - disbursement-creation
       required: true
     endpointKey:
       in: path
@@ -3668,6 +3829,12 @@ components:
         type: string
         enum:
           - all
+          - approved_by_partner
+          - engine_check_passed
+          - created
+          - rejected
+          - blocked
+          - inactive
     filter:
       name: filter
       in: query
@@ -3680,16 +3847,16 @@ components:
       name: pageNumber
       in: query
       description: Status values that need to be considered for filter
-      required: true
+      required: false
       explode: true
       schema:
         type: number
-        default: 1
+        default: 0
     pageSize:
       name: pageSize
       in: query
       description: Status values that need to be considered for filter
-      required: true
+      required: false
       explode: true
       schema:
         type: number
@@ -3798,6 +3965,12 @@ components:
       required: true
       schema:
         type: number
+    uniqueId:
+      in: path
+      name: uniqueId
+      required: true
+      schema:
+        type: string
 
   responses:
     Error400:
