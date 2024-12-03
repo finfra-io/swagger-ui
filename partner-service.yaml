@@ -13,11 +13,7 @@ info:
     name: 'unlicense'
     url: 'https://unlicense.org'
 servers:
-  # Added by API Auto Mocking Plugin
-  # Added by API Auto Mocking Plugin
-  - description: SwaggerHub API Auto Mocking
-    url: https://virtserver.swaggerhub.com/Finfra/partner_service/1.0.0
-  - description: Development environment
+  - description: development environment
     url: 'https://partner-service-stg-dev-public.elp.finfra.io'
   - description: Live environment
     url: 'https://partner-service.elp.finfra.io'
@@ -25,7 +21,11 @@ tags:
   - name: Authentication
     description: |
       Authentication
-      To access our API, you must authenticate using Basic Authentication. This requires a Partner ID and Password, which our team will provide upon establishing a partnership. With these credentials, you can obtain an access token through our GET access token API endpoint.
+      FINFRA API authenticates via API keys accessible within the dashboard
+      For tighter security, consider restricted keys. <br> Keep your API keys confidential to prevent unauthorized access.
+      Never expose them in public repositories or client-side code.
+      All API interactions must be over HTTPS; unauthenticated or HTTP requests will be rejected.
+      <!-- Escaped XML-like tag -->
   - name: Document
     description: |
       The KYC (Know Your Customer) process necessitates the population of certain documents into our system prior to enabling a partner to create a borrower profile. The following critical steps must be executed in sequence:
@@ -38,29 +38,73 @@ tags:
       - For an individual borrower: `PERSONAL`
       - For a business entity borrower: `BUSINESS`
       Please ensure that the appropriate enumeration is provided when initiating processes, as each borrower type is subject to a different procedural workflow. Accurate enumeration is critical to ensure compliance with our tailored service protocols.
-  - name: Credit Score
-    description: |
-      Here [link](https://kroki.io/mermaid/svg/eNp1kMGKAjEMhu8-RS7C7GEYHD25ILirB2-C-wLdTnQK2tY0VYR5eMfWtVvRHkpLvj8h346EbeFn8TmA_sw9t6hZScHK6CL_fgRkOIQvQ2TOSMXfAzYoE7HUjTVK86iohFWVNISVd0guL9f_yls-RCTc5QlJbS_hvWry1Ph9yj0mPYcmMRRZSdgoLlvl2NAlgmtBrPs9ynLWbRgtjKaw0tYzfPf0TYHYu-5JzwtjqUE9hTUZic7dWghGkL4feEDqkqBcVwjH1eH3bjbBdS4vwDJ0rgiPHh1D3AyChxQc5_5CcIcP-u4h8ZPBFcSHtTM) for the flow
-      - The first step on Authentication  - input the credential
-      - Second Goes to Borrower section - Process the Endpoint `{ /api/core/users } `
-      - on Callback Section - Process the Endpoint `{ api/core/ftm/users/user-verify / {userId} }`
-      - on Callback Section - Process the Endpoint `{ api/core/ftm/users/user-score / {userId} }`
-      
-      
-      take a notes on endpoint /api/core/ftm/users/{endpointKey}/{userId}
-      we can change the enum into : “ user-verify ” or “ user-score ”
   - name: Finfra Loan Services
     description: |
       -
-  - name: Error Status
+  - name: Error Status and Healthcheck
     description: |
       for checking purpose
-  - name: Callback
-    description: |
-      This endpoint is used for receiving callbacks related to the status of user creation, user verify, user credit score, laon and bnpl.
-        The `type` path parameter specifies the type of the callback.
-
 paths:
+  /:
+    get:
+      tags:
+        - Error Status and Healthcheck
+      operationId: getRoot
+      summary: <Root> checking service status
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Root'
+        400:
+          description: example error 400 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400Response'
+  /healthcheck/liveness:
+    get:
+      security: []
+      summary: 'Liveness check'
+      tags:
+        - Error Status and Healthcheck
+      operationId: getLiveness
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Healthcheck'
+        400:
+          description: example error 400 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400Response'
+  /healthcheck/readiness:
+    get:
+      security: []
+      tags:
+        - Error Status and Healthcheck
+      operationId: getReadiness
+      summary: 'Readiness check'
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Root'
+        400:
+          description: example error 400 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400Response'
+
   /api/auth/token:
     post:
       security:
@@ -103,6 +147,143 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error500Response'
+
+  /api/core/users/{userId}:
+    get:
+      security:
+        - BearerAuth: []
+      tags:
+        - Borrower
+      operationId: getSinglePartnerUsers
+      parameters:
+        - $ref: '#/components/parameters/userId'
+      responses:
+        200:
+          description: A borrower
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+    patch:
+      security: []
+      tags:
+        - Borrower
+      operationId: updateSinglePartnerUsers
+      summary: Update single partner borrower
+      parameters:
+        - $ref: '#/components/parameters/userId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
+      responses:
+        200:
+          description: Success update borrower
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        400:
+          description: example error 400 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400Response'
+        415:
+          description: example error 415 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error415Response'
+        500:
+          description: example error 500 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error500Response'
+  /api/core/users/score-report:
+    post:
+      security:
+        - BearerAuth: []
+      tags:
+        - Borrower
+      operationId: getBorrowerCreditScore
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/scoreReportRequest'
+      responses:
+        200:
+          description: A borrower credit score
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/scoreReport'
+
+  /api/core/users/{identityNumber}/credit-history:
+    get:
+      security:
+        - BearerAuth: []
+      tags:
+        - Borrower
+      operationId: creditHistory
+      summary: Request Credit History
+      parameters:
+        - $ref: '#/components/parameters/identityNumber'
+      responses:
+        200:
+          description: Success request credit history
+        400:
+          description: example error 400 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400Response'
+        415:
+          description: example error 415 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error415Response'
+        500:
+          description: example error 500 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error500Response'
+
+  /api/core/users/credit-limit-agreement:
+    post:
+      tags:
+        - Borrower
+      operationId: createCrediLimitAgreementDocument
+      summary: Create credit limit aggreement document object
+      description: Create credit limit aggreement document object
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CreateCreditLimitAgreementDocumentRequest'
+      responses:
+        201:
+          $ref: '#/components/responses/CreateDocument'
+        400:
+          $ref: '#/components/responses/Error400'
+        401:
+          $ref: '#/components/responses/Error401'
+        409:
+          $ref: '#/components/responses/Error409'
+        429:
+          $ref: '#/components/responses/Error429'
+        500:
+          $ref: '#/components/responses/Error500'
 
   /api/documents:
     post:
@@ -160,315 +341,28 @@ paths:
         500:
           $ref: '#/components/responses/Error500'
 
-  /api/core/users:
-    post:
-      security:
-        - BearerAuth: []
-      tags:
-        - Borrower
-      operationId: createPartnerUsers
-      summary: Create partner borrower
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateUserRequest'
-      responses:
-        200:
-          description: Success create borrower
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-        400:
-          description: example error 400 response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error400Response'
-        401:
-          description: example error 401 response
-          content:
-            application/json:
-              schema:
-                  $ref: '#/components/schemas/Error401Response'
-        409:
-          description: example error 409 response
-          content:
-            application/json:
-              schema:
-                  $ref: '#/components/schemas/Error409Response'
-        500:
-          description: example error 500 response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error500Response'
-  /api/core/users/{userId}:
+  /api/core/loans:
     get:
-      security:
-        - BearerAuth: []
       tags:
-        - Borrower
-      operationId: getSinglePartnerUsers
+        - Finfra Loan Services
+      operationId: getLoanList
       parameters:
-        - $ref: '#/components/parameters/userId'
-      responses:
-        200:
-          description: A borrower
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-    patch:
-      security:
-        - BearerAuth: []
-      tags:
-        - Borrower
-      operationId: updateSinglePartnerUsers
-      summary: Update single partner borrower
-      parameters:
-        - $ref: '#/components/parameters/userId'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateUserRequest'
-      responses:
-        200:
-          description: Success update borrower
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-        400:
-          description: example error 400 response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error400Response'
-        415:
-          description: example error 415 response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error415Response'
-        500:
-          description: example error 500 response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error500Response'
-  /api/core/users/{userId}/approve:
-    post:
-      security:
-        - BearerAuth: []
-      tags:
-        - Borrower
-      operationId: approveUser
-      summary: Approve borrower
-      parameters:
-        - $ref: '#/components/parameters/userId'
-      responses:
-        200:
-          description: Success approving borrower
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-        400:
-          description: example error 400 response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error400Response'
-        415:
-          description: example error 415 response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error415Response'
-        500:
-          description: example error 500 response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error500Response'
-  /api/core/users/{userId}/block:
-    post:
-      security:
-        - BearerAuth: []
-      tags:
-        - Borrower
-      operationId: blockUser
-      summary: Block borrower
-      parameters:
-        - $ref: '#/components/parameters/userId'
-      responses:
-        200:
-          description: Success block borrower
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-        400:
-          description: example error 400 response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error400Response'
-        415:
-          description: example error 415 response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error415Response'
-        500:
-          description: example error 500 response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error500Response'
-  /api/core/users/{userId}/rdf/verify-biometric:
-    post:
-      security:
-        - BearerAuth: []
-      tags:
-        - Borrower
-      operationId: verifyUserBiometric
-      summary: Verify borrower biometric
-      parameters:
-        - $ref: '#/components/parameters/userId'
-      responses:
-        200:
-          description: Success verify user biometric
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-        400:
-          description: example error 400 response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error400Response'
-        415:
-          description: example error 415 response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error415Response'
-        500:
-          description: example error 500 response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error500Response'
-  /api/core/users/rdf/status:
-    post:
-      security:
-        - BearerAuth: []
-      tags:
-        - Borrower
-      summary: Update borrower RDF status
-      operationId: updateUserRdfStatus
-      responses:
-        200:
-          description: Success update borrower RDF status
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-        400:
-          description: example error 400 response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error400Response'
-        415:
-          description: example error 415 response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error415Response'
-        500:
-          description: example error 500 response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error500Response'
-  /api/core/users/{userId}/rdf/accounts:
-    post:
-      security:
-        - BearerAuth: []
-      tags:
-        - Borrower
-      summary: Create borrower RDF account
-      operationId: createUserRdfAccount
-      parameters:
-        - $ref: '#/components/parameters/userId'
-      responses:
-        200:
-          description: Process RDF account submission
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-        400:
-          description: example error 400 response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error400Response'
-        415:
-          description: example error 415 response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error415Response'
-        500:
-          description: example error 500 response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error500Response'
-  /api/core/ftm/users/{callbackTitle}/status:
-    post:
-      summary: Create Borrower Callback
-      tags:
-        - Callback
-      parameters:
-        - $ref: '#/components/parameters/callbackTitle'
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/FtmCreateCallback'
-      responses:
-        '200':
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/FtmCreateCallback'
+        - $ref: '#/components/parameters/userIdQ'
+        - $ref: '#/components/parameters/uniqueIdQ'
+        - $ref: '#/components/parameters/pageNumber'
+        - $ref: '#/components/parameters/pageSize'
+        - $ref: '#/components/parameters/startRangeAmountQ'
+        - $ref: '#/components/parameters/endRangeAmountQ'
+        - $ref: '#/components/parameters/startDateQ'
+        - $ref: '#/components/parameters/endDateQ'
 
-  /api/core/ftm/users/{endpointKey}/{userId}:
-    post:
-      summary: partner need to be verified and credit score obtained before creating a loan or getting a credit score list
-      tags:
-        - Credit Score
-      parameters:
-        - $ref: '#/components/parameters/userId'
-        - $ref: '#/components/parameters/endpointKey'
       responses:
-        '200':
-          description: Successful operation
+        200:
+          description: list loan
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FtmCreateCallback'
+                $ref: '#/components/schemas/LoanList'
 
   /api/core/loans/{userId}:
     post:
@@ -501,6 +395,22 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error400Response'
 
+  /api/core/loans/details/{uniqueId}:
+    get:
+      tags:
+        - Finfra Loan Services
+      operationId: getLoanDetail
+      parameters:
+        - $ref: '#/components/parameters/uniqueId'
+
+      responses:
+        200:
+          description: detal loan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoanListItem'
+
   /api/core/loans/{userId}/bnpl:
     post:
       security:
@@ -524,7 +434,32 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Loan'
+                $ref: '#/components/schemas/FeatureFlag'
+        400:
+          description: example error 400 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400Response'
+
+  /api/core/loans/{loanUniqueId}/disbursement:
+    post:
+      security:
+        - BearerAuth: []
+      tags:
+        - Finfra Disbursement Services
+      parameters:
+        - $ref: '#/components/parameters/loanUniqueId'
+      operationId: disbursement
+      summary: Disburse loan
+      description: This endpoint will initiate disburse the loan money
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureFlag'
         400:
           description: example error 400 response
           content:
@@ -536,7 +471,7 @@ paths:
     get:
       security: []
       tags:
-        - Error Status
+        - Error Status and Healthcheck
       operationId: getErrorExample
       summary: 'Error example'
       parameters:
@@ -600,31 +535,80 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error500Response'
 
+  /api/feature-flag:
+    get:
+      tags:
+        - Error Status and Healthcheck
+      operationId: getFeatureFlag
+      summary: Get feature flag
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureFlag'
+        400:
+          description: example error 400 response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error400Response'
+
 components:
   schemas:
+    Root:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          example: 'OK'
+    Healthcheck:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          example: 'OK'
+    FeatureFlag:
+      type: object
+      required:
+        - key
+        - value
+      properties:
+        key:
+          type: string
+          example: 'test-feature-flag'
+        value:
+          type: boolean
+          example: false
     User:
       type: object
       required:
         - _id
-        - partner_id
-        - authorised_signatory
+        - partnerId
+        - authorisedSignatory
         - status
-        - swift_code
-        - created_at
-        - updated_at
+        - swiftCode
+        - createdAt
+        - updatedAt
       properties:
         _id:
           type: string
           example: '1234567890abcdef'
-        partner_id:
+        partnerId:
           type: string
           example: '1234567890abcdef-1234567890abcdef-1234567890abcdef'
         entity:
           $ref: '#/components/schemas/UserEntity'
-        authorised_signatory:
+        authorisedSignatory:
           $ref: '#/components/schemas/UserAuthorisedSignatory'
-        swift_code:
-          $ref: '#/components/schemas/UserSwiftCode'
+        swiftCode:
+          type: string
+          example: 'BMRIIDJA'
         status:
           type: string
           example: 'CREATED'
@@ -634,38 +618,228 @@ components:
             - APPROVED_BY_PARTNER
             - BLOCKED
             - INACTIVE
-        verify:
-          type: boolean
-        created_at:
+        createdAt:
           type: string
           example: '2023-09-04T06:19:06.525+0000'
-        updated_at:
+        updatedAt:
           type: string
           example: '2023-09-04T06:19:06.525+0000'
+        rdf:
+          $ref: '#/components/schemas/UserRdf'
+
+    CheckUserHub:
+      type: object
+      properties:
+        id:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        status:
+          type: string
+          enum: [ENGINE_CHECK_PASSED, ENGINE_CHECK_FAILED, OTHER_STATUS]
+        checking:
+          type: object
+          properties:
+            status:
+              type: string
+              enum: [SUCCESS, FAILED]
+            reason:
+              type: string
+
+    scoreReportRequest:
+      type: object
+      required:
+        - user_id
+      properties:
+        userId:
+          type: string
+          example: '1234567890abcdef-1234567890abcdef-1234567890abcdef'
+
+    scoreReport:
+      type: object
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        nik:
+          type: string
+        pdf_clik_link:
+          type: string
+        pdf_afpi_link:
+          type: string
 
     CreateUserRequest:
       type: object
       required:
         - type
         - authorised_signatory
-        - swift_code
       properties:
         type:
           type: string
           enum:
             - PERSONAL
             - BUSINESS
-          minLength: 8
-          maxLength: 8
+          example: 'BUSINESS'
         entity:
           $ref: '#/components/schemas/UserEntity'
         authorised_signatory:
           $ref: '#/components/schemas/UserAuthorisedSignatory'
-        swift_code:
-          $ref: '#/components/schemas/UserSwiftCode'
-          
+    UpdateUserRequest:
+      type: object
+      required:
+        - authorised_signatory
+      properties:
+        entity:
+          $ref: '#/components/schemas/UpdateUserEntity'
+        authorised_signatory:
+          $ref: '#/components/schemas/UpdateUserAuthorisedSignatory'
 
-    Loan:
+    UpdateUserEntity:
+      type: object
+      description: 'User entity required if user.type is BUSINESS'
+      properties:
+        name:
+          type: string
+          minLength: 3
+          maxLength: 60
+          example: 'company name'
+        address:
+          allOf:
+            - $ref: '#/components/schemas/Address'
+            - $ref: '#/components/schemas/AddressPostalCode'
+        phone_number:
+          type: string
+          description: 'phone number in E.164 format'
+          pattern: '^\+62\d{1,14}$'
+          minLength: 5
+          maxLength: 20
+          example: '+6287711998822'
+        fax:
+          type: string
+          description: 'Entity phone number in E.164 format'
+          pattern: '^\+62\d{1,14}$'
+          minLength: 3
+          maxLength: 20
+          example: '+622133442233'
+        email:
+          type: string
+          format: email
+          description: 'Email address of authorised signatory'
+          minLength: 6
+          maxLength: 128
+        business_type:
+          $ref: '#/components/schemas/UserBusinessTypeCommonEnum'
+        industry:
+          $ref: '#/components/schemas/UserIndustryCommonEnum'
+        nationality:
+          $ref: '#/components/schemas/CountryCode'
+        residence:
+          $ref: '#/components/schemas/CountryCode'
+        npwp:
+          type: string
+          minLength: 15
+          maxLength: 16
+          example: '081785542123321'
+        phone_ext:
+          type: string
+          description: 'optional'
+          example: '+6285633122'
+        legal_entity:
+          type: string
+          example: 'PT'
+          enum:
+            - PT
+            - CV
+            - UD
+            - FIRM
+            - OTHER
+        establishment_date:
+          type: string
+          example: '1995-11-01'
+          format: date
+        managements:
+          $ref: '#/components/schemas/UserEntityManagements'
+        establishment_place:
+          type: string
+          example: 'Jakarta'
+        establishment_number:
+          type: string
+          example: 'SK/1231/29032'
+
+    UpdateUserAuthorisedSignatory:
+      type: object
+      description: 'Authorised Signatory'
+      properties:
+        marital_status:
+          $ref: '#/components/schemas/MaritalEnum'
+        gender:
+          $ref: '#/components/schemas/GenderEnum'
+        title:
+          $ref: '#/components/schemas/TitleEnum'
+        domicile:
+          $ref: '#/components/schemas/CountryCode'
+        religion:
+          $ref: '#/components/schemas/ReligionEnum'
+        job:
+          $ref: '#/components/schemas/JobEnum'
+        education:
+          $ref: '#/components/schemas/EducationEnum'
+        address:
+          allOf:
+            - $ref: '#/components/schemas/Address'
+            - $ref: '#/components/schemas/AddressPostalCode'
+            - $ref: '#/components/schemas/AddressCountry'
+        bank_account:
+          $ref: '#/components/schemas/UserBankAccount'
+
+        business_type:
+          $ref: '#/components/schemas/UserBusinessTypeCommonEnum'
+        monthly_income_range:
+          $ref: '#/components/schemas/UserMonthlyIncomeRangeEnum'
+        housing_status:
+          $ref: '#/components/schemas/UserHousingStatusEnum'
+        source_of_fund:
+          $ref: '#/components/schemas/UserSourceOfFundEnum'
+
+    CreditHistoryRequest:
+      type: object
+      required:
+        - nik
+        - mobileNumber
+      properties:
+        nik:
+          type: string
+          minLength: 16
+          maxLength: 16
+        mobileNumber:
+          type: string
+          description: 'Phone number of the management representative in E.164 format'
+          pattern: '^\+62\d{1,14}$'
+          minLength: 10
+          maxLength: 20
+          example: '+6281274384381'
+
+    LoanList:
+      properties:
+        data:
+          type: array
+          description: 'list of loan'
+          items:
+            $ref: '#/components/schemas/LoanListItem'
+        current_page:
+          type: number
+          example: 1
+        total_pages:
+          type: number
+          example: 1
+        count:
+          type: number
+          example: 1
+
+    LoanListItem:
       type: object
       required:
         - id
@@ -681,9 +855,50 @@ components:
         partner_id:
           type: string
           example: '7097bbbb-1ffa-47aa-8cb4-ad01e9e73762'
-        userId:
+        user_id:
           type: string
           example: '7097bbbb-1ffa-47aa-8cb4-ad01e9e73762'
+        product:
+          $ref: '#/components/schemas/LoanProduct'
+        amount:
+          type: number
+          example: 12000000
+        term:
+          type: number
+          example: 120
+        data:
+          type: object
+          properties:
+            annual_interest_rate:
+              type: number
+            disbursement_fee:
+              type: number
+            grace_term:
+              type: number
+            interest_fee:
+              type: number
+            risk_level:
+              $ref: '#/components/schemas/LoanRiskLevel'
+
+    Loan:
+      type: object
+      required:
+        - id
+        - partnerId
+        - user
+        - product
+        - amount
+        - term
+      properties:
+        id:
+          type: string
+          example: '6544de568f002963846527e0'
+        partnerId:
+          type: string
+          example: '7097bbbb-1ffa-47aa-8cb4-ad01e9e73762'
+        userId:
+          type: string
+          example: '6544de568f002963846527e0'
         product:
           $ref: '#/components/schemas/LoanProduct'
         amount:
@@ -716,14 +931,26 @@ components:
         - HIGH
         - VERY_HIGH
         - NOT_AVAILABLE
-      minLength: 3
-      maxLength: 20
     LoanProduct:
       type: string
-      minLength: 7
-      maxLength: 50
       example: finfra_sandbox_wr_IL_weekly
       enum:
+        - finfra_stg_dev_wr_spl
+        - finfra_stg_dev_wr_il_weekly
+        - finfra_stg_dev_wr_il_biweekly
+        - finfra_stg_dev_wr_il_monthly
+        - finfra_stg_dev_ir_spl
+        - finfra_stg_dev_ir_il_weekly
+        - finfra_stg_dev_ir_il_biweekly
+        - finfra_stg_dev_ir_il_monthly
+        - finfra_stg_dev_pf_spl
+        - finfra_stg_dev_pf_il_weekly
+        - finfra_stg_dev_pf_il_biweekly
+        - finfra_stg_dev_pf_il_monthly
+        - finfra_stg_dev_bnpl_spl
+        - finfra_stg_dev_bnpl_il_weekly
+        - finfra_stg_dev_bnpl_il_biweekly
+        - finfra_stg_dev_bnpl_il_monthly
         - finfra_sandbox_wr_spl
         - finfra_sandbox_wr_IL_weekly
         - finfra_sandbox_wr_IL_biweekly
@@ -737,6 +964,7 @@ components:
         - finfra_sandbox_pf_IL_biweekly
         - finfra_sandbox_pf_IL_monthly
         - main_finfra_spl_bnpl_loan_creation_no_login
+        - finfra_sandbox_bnpl_spl
         - finfra_sandbox_bnpl_IL_weekly
         - finfra_sandbox_bnpl_IL_biweekly
         - finfra_sandbox_bnpl_IL_monthly
@@ -753,75 +981,103 @@ components:
         - finfra_staging_pf_IL_weekly
         - finfra_staging_pf_IL_biweekly
         - finfra_staging_pf_IL_monthly
+        - finfra_staging_bnpl_spl
         - finfra_staging_bnpl_IL_weekly
         - finfra_staging_bnpl_IL_biweekly
         - finfra_staging_bnpl_IL_monthly
+        - finfra_production_wr_spl
+        - finfra_production_wr_IL_weekly
+        - finfra_production_wr_IL_biweekly
+        - finfra_production_wr_IL_monthly
+        - finfra_production_ir_spl
+        - finfra_production_ir_IL_weekly
+        - finfra_production_ir_IL_biweekly
+        - finfra_production_ir_IL_monthly
+        - finfra_production_pf_spl
+        - finfra_production_pf_IL_weekly
+        - finfra_production_pf_IL_biweekly
+        - finfra_production_pf_IL_monthly
+        - finfra_production_bnpl_spl
+        - finfra_production_bnpl_IL_weekly
+        - finfra_production_bnpl_IL_biweekly
+        - finfra_production_bnpl_IL_monthly
 
     CreateLoanRequest:
       type: object
-      required:
-        - product
-        - requested_amount
-        - term
-        - fields
+      oneOf:
+        - required:
+            - term
+          properties:
+            due_date:
+              not: {}
+        - required:
+            - due_date
+          properties:
+            term:
+              not: {}
       properties:
         endpoint_key:
           $ref: '#/components/schemas/LoanProduct'
         requested_amount:
           type: number
-          minimum: 1
           example: 1200000
         term:
           type: number
-          minimum: 1
           example: 120
+        due_date:
+          type: string
+          example: '2099-11-01'
+          format: date
+        get_details:
+          type: boolean
+          example: true
         fields:
           type: object
           properties:
             annual_interest_rate:
               type: number
-              minimum: 1
               nullable: true
             disbursement_fee:
               type: number
-              minimum: 0
               nullable: true
             cs_payment_day:
               type: number
-              minimum: 0
               nullable: true
             request_effective_on:
               type: string
               nullable: true
             grace_term:
               type: number
-              minimum: 0
               nullable: true
             interest_fee:
               type: number
-              minimum: 0
               nullable: true
             partner_risk_level:
               $ref: '#/components/schemas/LoanRiskLevel'
 
+      required:
+        - product
+        - requested_amount
+        - fields
+
     CreateBnplRequest:
       type: object
       required:
+        - product
         - amount
         - description
         - term
       properties:
+        endpoint_key:
+          $ref: '#/components/schemas/LoanProduct'
         amount:
           type: number
           example: 1200000
-          minimum: 1
         description:
           type: string
-          minLength: 1
           example: '0.3,null,null,LOW'
         term:
           type: number
-          minimum: 0
           example: 120
 
     GetAccessToken:
@@ -843,28 +1099,26 @@ components:
           format: binary
         type:
           type: string
-          description: |
-            enum:
-            - KTP
-            - SELFIE
-            - NPWP
-            - NPWP_COMPANY
-            - LOAN_AGREEMENT
-            - INVOICE_FINANCING
-            - CREDIT_HISTORY
-            - TRANSACTION_HISTORY
-            - OTHER
-          enum:
-            - KTP
-            - SELFIE
-            - NPWP
-            - NPWP_COMPANY
-            - LOAN_AGREEMENT
-            - INVOICE_FINANCING
-            - CREDIT_HISTORY
-            - TRANSACTION_HISTORY
-            - OTHER
         reference_id:
+          type: string
+        user_id:
+          type: string
+        description:
+          type: string
+    CreateCreditLimitAgreementDocumentRequest:
+      type: object
+      required:
+        - file
+        - type
+      properties:
+        file:
+          type: string
+          format: binary
+        type:
+          type: string
+        reference_id:
+          type: string
+        user_id:
           type: string
         description:
           type: string
@@ -1228,17 +1482,11 @@ components:
               type: string
     Address:
       type: object
-      required:
-        - street_address
-        - province
-        - city
-        - district
-        - village
       properties:
         street_address:
           type: string
           description: 'Only field that is required in address'
-          example: 'Jl. Kenangan'
+          example: 'string of address'
         rt:
           type: string
           minLength: 1
@@ -1255,20 +1503,18 @@ components:
           $ref: '#/components/schemas/ProvinceList'
         city:
           type: string
-          description: '[list of city](https://docs.google.com/spreadsheets/d/1gL-cOM1z36AK-XWl-Exk_9F3Vm8nhZVAA25Sxb5hm5c/edit?usp=sharing)'
-          example: 'DEPOK'
+          description: 'Address city'
+          example: 'string of city'
         district:
           type: string
-          description: '[list of district](https://docs.google.com/spreadsheets/d/1gL-cOM1z36AK-XWl-Exk_9F3Vm8nhZVAA25Sxb5hm5c/edit?usp=sharing)'
-          example: 'SUKMAJAYA'
+          description: 'Address district'
+          example: 'string of district'
         village:
           type: string
-          description: '[list of village](https://docs.google.com/spreadsheets/d/1gL-cOM1z36AK-XWl-Exk_9F3Vm8nhZVAA25Sxb5hm5c/edit?usp=sharing)'
-          example: 'ABADIJAYA'
+          description: 'Address village'
+          example: 'string of village'
     AddressPostalCode:
       type: object
-      required:
-        - postal_code
       properties:
         postal_code:
           type: string
@@ -1278,8 +1524,6 @@ components:
           maxLength: 5
     AddressCountry:
       type: object
-      required:
-        - country
       properties:
         country:
           type: string
@@ -1326,8 +1570,6 @@ components:
         - OTHER
     CountryCode:
       type: string
-      minLength: 2
-      maxLength: 4
       enum:
         - AF
         - AX
@@ -1577,7 +1819,7 @@ components:
         - YE
         - ZM
         - ZW
-    
+
     MaritalEnum:
       type: string
       description: |
@@ -1590,15 +1832,11 @@ components:
         - MARRIED
         - WIDOWER
         - WIDOW
-      minLength: 5
-      maxLength: 10
     GenderEnum:
       type: string
       enum:
         - MALE
         - FEMALE
-      minLength: 4
-      maxLength: 6
     TitleEnum:
       type: string
       description: |
@@ -1611,8 +1849,6 @@ components:
         - IBU
         - SDR
         - SDRI
-      minLength: 3
-      maxLength: 4
     ReligionEnum:
       type: string
       description: |
@@ -1631,8 +1867,6 @@ components:
         - HINDU
         - CONFUCIAN
         - OTHER
-      minLength: 5
-      maxLength: 15
     JobEnum:
       type: string
       description: |
@@ -1703,8 +1937,6 @@ components:
         - CONSULTANT
         - DESIGNER
         - OTHER
-      minLength: 5
-      maxLength: 35
     EducationEnum:
       type: string
       description: |
@@ -1724,9 +1956,7 @@ components:
         - BACHELORS_DEGREE
         - MASTERS_DEGREE
         - PHD
-      minLength: 3
-      maxLength: 25
-    HousingStatusEnum:
+    UserHousingStatusEnum:
       type: string
       description: |
         - OWN_HOME
@@ -2246,7 +2476,7 @@ components:
         - TRADING
         - TRANSPORTATION
         - OTHER
-    IncomeEnum:
+    UserSourceOfFundEnum:
       type: string
       description: |
         - SALARY
@@ -2255,8 +2485,18 @@ components:
       enum:
         - SALARY
         - BUSINESS
-        - OTHER
-    
+    UserMonthlyIncomeRangeEnum:
+      type: string
+      enum:
+        - LESS_THAN_3_MILLION
+        - GTE_3_AND_LT_5_MILLION
+        - GTE_5_AND_LT_10_MILLION
+        - GTE_10_AND_LT_20_MILLION
+        - GTE_20_AND_LT_50_MILLION
+        - GTE_50_AND_LT_100_MILLION
+        - GTE_100_AND_LT_500_MILLION
+        - GREATER_THAN_500_MILLION
+
     UserEntityManagementsCommonItem:
       properties:
         name:
@@ -2265,7 +2505,7 @@ components:
           example: 'name of management people'
         position:
           type: string
-          example: "MANAGEMENT_COMISSIONER"
+          example: 'MANAGEMENT_COMISSIONER'
           description: 'Position of the management representative'
           enum:
             - OWNER_MANAGEMENT
@@ -2320,8 +2560,6 @@ components:
           example: '3275062309928971'
     UserBusinessTypeCommonEnum:
       type: string
-      minLength: 5
-      maxLength: 100
       enum:
         - OTHER
         - AGRICULTURE_HUNTING_FARMING_FACILITIES
@@ -2562,8 +2800,6 @@ components:
         - OTHERS_OTHERS
     UserIndustryCommonEnum:
       type: string
-      minLength: 5
-      maxLength: 100
       enum:
         - PRIVATE_PERSON_NAME
         - PRIVATE_PERSON_NUMBERED
@@ -2644,6 +2880,7 @@ components:
       required:
         - holder_name
         - number
+        - swift_code
       properties:
         holder_name:
           type: string
@@ -2656,248 +2893,12 @@ components:
           example: '123123123213'
           minLength: 10
           maxLength: 20
-
-    UserEntity:
-      type: object
-      description: 'User entity required if user.type is BUSINESS'
-      required:
-        - name
-        - npwp
-        - email
-        - legal_entity
-        - address
-        - establishment_date
-        - industry
-        - nationality
-        - managements
-      properties:
-        name:
-          type: string
-          minLength: 3
-          maxLength: 60
-          example: 'company name'
-        address:
-          allOf:
-            - $ref: '#/components/schemas/Address'
-            - $ref: '#/components/schemas/AddressPostalCode'
-        identity_number:
-          type: string
-          description: 'phone number in E.164 format'
-          pattern: '^\+62\d{1,14}$'
-          minLength: 5
-          maxLength: 20
-          example: '+6287711998822'
-        fax:
-          type: string
-          description: 'Entity phone number in E.164 format'
-          pattern: '^\+62\d{1,14}$'
-          minLength: 3
-          maxLength: 20
-          example: '+622133442233'
-        email:
-          type: string
-          format: email
-          description: 'Email address of authorised signatory'
-          minLength: 6
-          maxLength: 128
-        business_type:
-          $ref: '#/components/schemas/UserBusinessTypeCommonEnum'
-        industry:
-          $ref: '#/components/schemas/UserIndustryCommonEnum'
-        nationality:
-          $ref: '#/components/schemas/CountryCode'
-        residence:
-          $ref: '#/components/schemas/CountryCode'
-        npwp:
-          type: string
-          minLength: 15
-          maxLength: 16
-          example: '081785542123321'
-        phone_ext:
-          type: string
-          description: 'optional'
-          example: '+6285633122'
-        legal_entity:
-          type: string
-          example: 'PT'
-          enum:
-            - PT
-            - CV
-            - UD
-            - FIRM
-            - OTHER
-        establishment_date:
-          type: string
-          example: '1995-11-01'
-          format: date
-        managements:
-          $ref: '#/components/schemas/UserEntityManagements'
-
-    UserAuthorisedSignatory:
-      type: object
-      required:
-        - first_name
-        - birth_date
-        - birth_place
-        - email
-        - marital_status
-        - domicile
-        - religion
-        - gender
-        - job
-        - industry
-        - emergency_contact_name
-        - emergency_contact_number
-        - housing_status
-        - income_per_month
-        - source_income
-        - education
-        - address
-        - mobile_number
-        - bankAccount
-        - documents
-      description: 'Authorised Signatory'
-      properties:
-        first_name:
-          type: string
-          minLength: 2
-          maxLength: 30
-          description: 'First name of authorised signatory'
-          example: 'jhon'
-        last_name:
-          type: string
-          minLength: 2
-          maxLength: 30
-          example: 'doe'
-          description: 'Last name of authorised signatory'
-        birth_date:
-          type: string
-          example: '1995-11-01'
-          format: date
-          minLength: 10
-        birth_place:
-          type: string
-          minLength: 3
-          maxLength: 30
-          example: 'Kab. Semarang'
-        email:
-          type: string
-          format: email
-          description: 'Email address of authorised signatory'
-          minLength: 5
-          maxLength: 64
-        mother_maiden_name:
-          type: string
-          description: 'Mother maiden name of authorised signatory'
-          minLength: 2
-          maxLength: 30
-          example: 'sri ratu'
-        marital_status:
-          $ref: '#/components/schemas/MaritalEnum'
-        gender:
-          $ref: '#/components/schemas/GenderEnum'
-        title:
-          $ref: '#/components/schemas/TitleEnum'
-        domicile:
-          $ref: '#/components/schemas/CountryCode'
-        religion:
-          $ref: '#/components/schemas/ReligionEnum'
-        job:
-          $ref: '#/components/schemas/JobEnum'
-        industry:
-          $ref: '#/components/schemas/IndustryEnum'
-        emergency_contact_name:
-          type: string
-          minLength: 2
-          maxLength: 30
-          description: 'Emergency contact name of authorised signatory'
-          example: 'jhon'
-        emergency_contact_number:
-          type: string
-          description: 'Emergency contact number of the authorised signatory in E.164 format'
-          pattern: '^\+62\d{1,14}$'
-          minLength: 5
-          maxLength: 20
-          example: '+6281274384381'
-        housing_status:
-          $ref: '#/components/schemas/HousingStatusEnum'
-        income_per_month:
-          type: string
-          minLength: 1
-          example: '19999999'
-        source_income:
-          $ref: '#/components/schemas/IncomeEnum'
-        education:
-          $ref: '#/components/schemas/EducationEnum'
-        address:
-          allOf:
-            - $ref: '#/components/schemas/Address'
-            - $ref: '#/components/schemas/AddressPostalCode'
-            - $ref: '#/components/schemas/AddressCountry'
-        mobile_number:
-          type: string
-          description: 'Mobile number of the authorised signatory in E.164 format'
-          pattern: '^\+62\d{1,14}$'
-          minLength: 5
-          maxLength: 20
-          example: '+6281274384381'
-        bankAccount:
-          $ref: '#/components/schemas/UserBankAccount'
-        documents:
-          type: object
-          required:
-            - ktp
-            - npwp
-          properties:
-            ktp:
-              type: object
-              required:
-                - number
-              properties:
-                number:
-                  type: string
-                  minLength: 16
-                  maxLength: 16
-                  example: '3275062009921981'
-                file:
-                  type: string
-                  description: 'The id of KTP document'
-                  pattern: '^[a-f\d]{24}$'
-                  minLength: 5
-                issuing_city:
-                  type: string
-                  minLength: 3
-                  maxLength: 30
-                  example: 'Semarang'
-                expiry_date:
-                  type: string
-                  example: '2099-11-01'
-                  format: date
-                  minLength: 10
-                  maxLength: 10
-            selfie:
-              type: object
-              properties:
-                file:
-                  type: string
-                  description: 'The id of selfie document'
-                  pattern: '^[a-f\d]{24}$'
-                  minLength: 5
-            npwp:
-              type: object
-              properties:
-                number:
-                  type: string
-                  minLength: 15
-                  maxLength: 16
-                  example: '081785542123321'
-
+        swift_code:
+          $ref: '#/components/schemas/UserSwiftCode'
     # swiftcode
     UserSwiftCode:
       type: string
       example: 'BMRIIDJA'
-      minLength: 3
-      maxLength: 10
       description: |
         - BANK_JASA_JAKARTA = "JAJSIDJ1"  # Bank Jasa Jakarta
         - BPD_JAWA_TIMUR = "PDJTIDJ1"  # Bank Pembangunan Daerah Jawa Timur
@@ -2908,6 +2909,7 @@ components:
         - BANK_NUSANTARA_PARAHYANGAN = "NUPAIDJ6"  # Bank Nusantara Parahyangan
         - BANK_SBI_INDONESIA = "IDMOIDJ1"  # Bank SBI Indonesia
         - BANK_SINARMAS = "SBJKIDJA"  # Bank Sinarmas
+        - BCA SYARIAH = "SYCAIDJ1" # BCA Syariah,
         - BPD_BENGKULU = "PDBKIDJ1"  # Bank Pembangunan Daerah Bengkulu
         - BPD_DAERAH_ISTIMEWA_YOGYAKARTA_DIY_UUS = "SYYKIDJ1"  # Bank Pembangunan Daerah Istimewa Yogyakarta (DIY) Unit Usaha Syariah
         - BPD_JATENG = "PDJGIDJ1"  # Bank Pembangunan Daerah Jawa Tengah
@@ -3011,8 +3013,10 @@ components:
         - NUPAIDJ6
         - IDMOIDJ1
         - SBJKIDJA
+        - SYCAIDJ1
         - PDBKIDJ1
         - SYYKIDJ1
+        - PDJMIDJ1
         - PDJGIDJ1
         - SYJTIDJ1
         - PDKBIDJ1
@@ -3071,6 +3075,39 @@ components:
         - MEGAIDJA
         - BNPAIDJA
         - BOTKIDJX
+        - PDJBIDJA
+        - INPBIDJ1
+        - BUMIIDJA
+        - CICTIDJA
+        - SWBAIDJ1
+        - BBBAIDJA
+        - BRINIDJA
+        - BDIPIDJ1
+        - SWAGIDJ1
+        - ANZBIDJX
+        - ARTGIDJA
+        - BBUKIDJA
+        - SYBDIDJ1
+        - BWKIIDJA
+        - PDYKIDJ1
+        - SYRIIDJ1
+        - SYSSIDJ1
+        - SYNBIDJ1
+        - LMANIDJ1
+        - SYDKIDJ1
+        - DEUTIDJA
+        - ANTDIDJD
+        - BBAIIDJA
+        - PINBIDJA
+        - PMASIDJ1
+        - ABALIDBS
+        - SYJGIDJ1
+        - SYKSIDJ1
+        - PDKTIDJ1
+        - PDMLIDJ1
+        - BKKBIDJA
+        - LOMAIDJ1
+        - BOFAID2X
         - LPEIIDJ1
         - CHASIDJX
         - HSBCIDJA
@@ -3104,6 +3141,247 @@ components:
         - DJARIDJ1
         - MBBEIDJA
         - RIPAIDJ1
+
+    UserEntity:
+      type: object
+      description: 'User entity required if user.type is BUSINESS'
+      required:
+        - name
+        - npwp
+        - email
+        - legal_entity
+        - address
+        - establishment_date
+        - establishment_place
+        - deed_date
+        - deed_number
+        - industry
+        - nationality
+        - managements
+      properties:
+        name:
+          type: string
+          minLength: 3
+          maxLength: 60
+          example: 'company name'
+        address:
+          allOf:
+            - $ref: '#/components/schemas/Address'
+            - $ref: '#/components/schemas/AddressPostalCode'
+        phone_number:
+          type: string
+          description: 'phone number in E.164 format'
+          pattern: '^\+62\d{1,14}$'
+          minLength: 5
+          maxLength: 20
+          example: '+6287711998822'
+        fax:
+          type: string
+          description: 'Entity phone number in E.164 format'
+          pattern: '^\+62\d{1,14}$'
+          minLength: 3
+          maxLength: 20
+          example: '+622133442233'
+        email:
+          type: string
+          format: email
+          description: 'Email address of authorised signatory'
+          minLength: 6
+          maxLength: 128
+        business_type:
+          $ref: '#/components/schemas/UserBusinessTypeCommonEnum'
+        industry:
+          $ref: '#/components/schemas/UserIndustryCommonEnum'
+        nationality:
+          $ref: '#/components/schemas/CountryCode'
+        residence:
+          $ref: '#/components/schemas/CountryCode'
+        npwp:
+          type: string
+          minLength: 15
+          maxLength: 16
+          example: '081785542123321'
+        phone_ext:
+          type: string
+          description: 'optional'
+          example: '+6285633122'
+        legal_entity:
+          type: string
+          example: 'PT'
+          enum:
+            - PT
+            - CV
+            - UD
+            - FIRM
+            - OTHER
+        establishment_date:
+          type: string
+          example: '1995-11-01'
+          format: date
+        managements:
+          $ref: '#/components/schemas/UserEntityManagements'
+        establishment_place:
+          type: string
+          example: 'Jakarta'
+        deed_date:
+          type: string
+          example: '1995-11-01'
+          format: date
+        deed_number:
+          type: string
+          example: 'SK/1231/29032'
+
+    UserAuthorisedSignatory:
+      type: object
+      required:
+        - first_name
+        - birth_date
+        - birth_place
+        - email
+        - mother_maiden_name
+        - marital_status
+        - domicile
+        - religion
+        - gender
+        - job
+        - education
+        - address
+        - mobile_number
+        - bank_account
+        - documents
+        - business_type
+        - monthly_income_range
+        - emergency_contact_name
+        - emergency_contact_number
+        - housing_status
+        - source_of_fund
+      description: 'Authorised Signatory'
+      properties:
+        first_name:
+          type: string
+          minLength: 2
+          maxLength: 30
+          description: 'First name of authorised signatory'
+          example: 'jhon'
+        last_name:
+          type: string
+          example: 'doe'
+          description: 'Last name of authorised signatory'
+        birth_date:
+          type: string
+          example: '1995-11-01'
+          format: date
+          minLength: 10
+        birth_place:
+          type: string
+          minLength: 3
+          maxLength: 30
+          example: 'Kab. Semarang'
+        email:
+          type: string
+          format: email
+          description: 'Email address of authorised signatory'
+          minLength: 5
+          maxLength: 64
+        motherMaidenName:
+          type: string
+          description: 'Mother maiden name of authorised signatory'
+          minLength: 2
+          maxLength: 30
+          example: 'sri ratu'
+        marital_status:
+          $ref: '#/components/schemas/MaritalEnum'
+        gender:
+          $ref: '#/components/schemas/GenderEnum'
+        title:
+          $ref: '#/components/schemas/TitleEnum'
+        domicile:
+          $ref: '#/components/schemas/CountryCode'
+        religion:
+          $ref: '#/components/schemas/ReligionEnum'
+        job:
+          $ref: '#/components/schemas/JobEnum'
+        education:
+          $ref: '#/components/schemas/EducationEnum'
+        address:
+          allOf:
+            - $ref: '#/components/schemas/Address'
+            - $ref: '#/components/schemas/AddressPostalCode'
+            - $ref: '#/components/schemas/AddressCountry'
+        mobile_number:
+          type: string
+          description: 'Mobile number of the authorised signatory in E.164 format'
+          pattern: '^\+62\d{1,14}$'
+          minLength: 5
+          maxLength: 20
+          example: '+6281274384381'
+        bank_account:
+          $ref: '#/components/schemas/UserBankAccount'
+        documents:
+          type: object
+          required:
+            - ktp
+          properties:
+            ktp:
+              type: object
+              required:
+                - number
+              properties:
+                number:
+                  type: string
+                  pattern: '^(1[1-9]|21|[12356789][1-9]|5[1-3]|6[1-5]|[89][12])\d{2}\d{2}([04][1-9]|[1256][0-9]|[37][01])(0[1-9]|1[0-2])\d{2}\d{4}$'
+                  minLength: 16
+                  maxLength: 16
+                  example: '3275062009921981'
+                file:
+                  type: string
+                  description: 'The id of KTP document'
+                  pattern: '^[a-f\d]{24}$'
+                  minLength: 5
+                issuing_city:
+                  type: string
+                  minLength: 3
+                  maxLength: 30
+                  example: 'Semarang'
+                expiry_date:
+                  type: string
+                  example: '2099-11-01'
+                  format: date
+                  minLength: 10
+                  maxLength: 10
+            selfie:
+              type: object
+              properties:
+                file:
+                  type: string
+                  description: 'The id of selfie document'
+                  pattern: '^[a-f\d]{24}$'
+                  minLength: 5
+            npwp:
+              type: object
+              properties:
+                number:
+                  type: string
+                  minLength: 15
+                  maxLength: 16
+                  example: '081785542123321'
+        business_type:
+          $ref: '#/components/schemas/UserBusinessTypeCommonEnum'
+        monthly_income_range:
+          $ref: '#/components/schemas/UserMonthlyIncomeRangeEnum'
+        emergency_contact_name:
+          type: string
+          example: 'Humairah'
+          minLength: 2
+          maxLength: 50
+        emergency_contact_number:
+          type: string
+          example: '08123456789'
+        housing_status:
+          $ref: '#/components/schemas/UserHousingStatusEnum'
+        source_of_fund:
+          $ref: '#/components/schemas/UserSourceOfFundEnum'
+
     # ftm callback
     FtmCreateCallback:
       type: object
@@ -3123,16 +3401,27 @@ components:
           type: string
         customer_type:
           type: string
+        pdf_url_report:
+          type: string
+          nullable: true
+        pdf_afpi_url_report:
+          type: string
+          nullable: true
+        DetailsRequirements:
+          $ref: '#/components/schemas/DetailsRequirements'
+        detail:
+          $ref: '#/components/schemas/detail'
         AFPI_individual:
           $ref: '#/components/schemas/AFPIIndividual'
         CLIK_individual:
           $ref: '#/components/schemas/CLIKIndividual'
-        AFPI_Company:
+        AFPI_company:
           $ref: '#/components/schemas/AFPICompany'
-        CLIK_Company:
+        CLIK_company:
           $ref: '#/components/schemas/CLIKCompany'
 
     DetailsRequirements:
+      nullable: true
       type: object
       properties:
         personal_code:
@@ -3141,6 +3430,9 @@ components:
           type: string
         email:
           type: string
+          format: email
+          minLength: 6
+          maxLength: 128
         international_phone_string:
           type: string
         finfra_address:
@@ -3164,7 +3456,58 @@ components:
         agreement_pdf_url:
           type: string
 
+    detail:
+      nullable: true
+      type: object
+      properties:
+        customer_id:
+          type: string
+          nullable: true
+        pic_ktp:
+          type: string
+          nullable: true
+        pic_name:
+          type: string
+          nullable: true
+        pic_phone_number:
+          type: string
+          nullable: true
+        company_name:
+          type: string
+          nullable: true
+        vat_code:
+          type: string
+          nullable: true
+        email:
+          type: string
+          nullable: true
+        province:
+          type: string
+          nullable: true
+        city:
+          type: string
+          nullable: true
+        district:
+          type: string
+          nullable: true
+        subdistrict:
+          type: string
+          nullable: true
+        street:
+          type: string
+          nullable: true
+        postalCode:
+          type: string
+          nullable: true
+        bank_name:
+          type: string
+          nullable: true
+        bank_account_number:
+          type: string
+          nullable: true
+
     FtmBorrowerScoreCallback:
+      nullable: true
       type: object
       properties:
         AFPI_individual:
@@ -3177,24 +3520,33 @@ components:
           $ref: '#/components/schemas/CLIKCompany'
 
     AFPICompany:
+      nullable: true
       type: object
       properties:
         count_npwp:
           type: number
+          nullable: true
         loans_count:
           type: number
+          nullable: true
         sum_loan_sums:
           type: number
+          nullable: true
         year_from_ktp:
           type: string
+          nullable: true
         good_current_5:
           type: number
+          nullable: true
         count_outstanding:
           type: number
+          nullable: true
         count_written_off:
           type: number
+          nullable: true
         largest_loan_sums:
           type: number
+          nullable: true
         max_dpd_danabijak:
           type: number
           nullable: true
@@ -3203,8 +3555,10 @@ components:
           nullable: true
         smallest_loan_sums:
           type: number
+          nullable: true
         count_loans_danabijak:
           type: number
+          nullable: true
         max_dpd_max_danabijak:
           type: number
           nullable: true
@@ -3213,81 +3567,109 @@ components:
           nullable: true
         sum_loans_past_30_days:
           type: number
+          nullable: true
         sum_loans_past_90_days:
           type: number
+          nullable: true
         last_loan_sum_danabijak:
           type: number
           nullable: true
         last_reported_date_afpi:
           type: number
+          nullable: true
         count_loans_past_90_days:
           type: number
+          nullable: true
         max_dpd_dpd_max_last_180:
           type: number
           nullable: true
         current_bad_outstanding_0:
           type: number
+          nullable: true
         dpd_max_bad_outstanding_0:
           type: number
+          nullable: true
         count_loans_before_60_days:
           type: number
+          nullable: true
         current_good_outstanding_0:
           type: number
+          nullable: true
         year_from_ktp_date_of_birth:
           type: number
           nullable: true
         days_since_last_disbursement:
           type: number
+          nullable: true
         max_dpd_dpd_current_last_180:
           type: number
           nullable: true
         days_since_first_disbursement:
           type: number
+          nullable: true
         first_fully_paid_reported_date:
           type: number
+          nullable: true
         sum_dpd_max_good_outstanding_0:
           type: number
+          nullable: true
         count_outstanding_loan_providers:
           type: number
+          nullable: true
         sum_loan_sums_30days_outstanding:
           type: number
+          nullable: true
         sum_of_loans_due_date_in_next_30:
           type: number
+          nullable: true
         count_disbursed_10jt_current_dpd_0:
           type: number
+          nullable: true
         avg_loan_sum_lt_dpd_max0dpd_30_days:
           type: number
+          nullable: true
         count_1jt_current_good_fully_paid_0:
           type: number
+          nullable: true
         count_5jt_current_good_outstanding0:
           type: number
+          nullable: true
         count_3jt_current_good_outstanding_0:
           type: number
+          nullable: true
         count_outstanding_loan_providers_bad_0:
           type: number
+          nullable: true
         days_since_first_disbursement_danabijak:
           type: number
           nullable: true
         avg_disbursements_lt_30dpd_max_60_days_ago:
           type: number
+          nullable: true
         sum_disbursements_gt_30dpd_max_60_days_ago:
           type: number
+          nullable: true
         sum_disbursements_lt_30dpd_max_60_days_ago:
           type: number
+          nullable: true
         days_since_first_current_0_outstanding_date:
           type: number
+          nullable: true
         days_since_last_current_bad0_outstanding_date:
           type: number
           nullable: true
         days_since_last_outstanding_disbursement_date:
           type: number
+          nullable: true
         days_since_first_current_bad0_outstanding_date:
           type: number
           nullable: true
         max_principal_disbursed_lt_30dpd_max_60_days_ago:
           type: number
+          nullable: true
 
     CLIKCompanyRawData:
+      nullable: true
       type: object
       properties:
         MessageResponseMessageResponse:
@@ -3295,50 +3677,70 @@ components:
           properties:
             Id:
               type: string
+              nullable: true
             GroupId:
               type: string
+              nullable: true
             TimeStamp:
               type: string
+              nullable: true
             ResultCode:
               type: string
+              nullable: true
             Idempotence:
               type: string
+              nullable: true
             ResultLanguage:
               type: string
+              nullable: true
             ResultDescription:
               type: string
+              nullable: true
             CredentialsResponse:
               type: object
               properties:
                 Id:
                   type: string
+                  nullable: true
                 Domain:
                   type: string
+                  nullable: true
                 Password:
                   type: string
+                  nullable: true
                 ResultCode:
                   type: string
+                  nullable: true
                 ResultLanguage:
                   type: string
+                  nullable: true
                 ResultDescription:
                   type: string
+                  nullable: true
             ExpirationTimeStamp:
               type: string
+              nullable: true
         ProductResponse:
           type: object
           properties:
             Id:
               type: string
+              nullable: true
             Version:
               type: string
+              nullable: true
             ServiceId:
               type: string
+              nullable: true
             ResultCode:
               type: string
+              nullable: true
             ResultLanguage:
               type: string
+              nullable: true
             ResultDescription:
               type: string
+              nullable: true
             CB_NAE_ProductOutput:
               type: object
               properties:
@@ -3347,6 +3749,7 @@ components:
                   properties:
                     CBSMessageId:
                       type: string
+                      nullable: true
                 CreditReport:
                   type: object
                   properties:
@@ -3355,19 +3758,25 @@ components:
                       properties:
                         Count1Month:
                           type: string
+                          nullable: true
                         Count3Months:
                           type: string
+                          nullable: true
                         Count6Months:
                           type: string
+                          nullable: true
                         Count12Months:
                           type: string
+                          nullable: true
                     MatchedSubject:
                       type: object
                       properties:
                         FlagMatched:
                           type: string
+                          nullable: true
                         CBSubjectCode:
                           type: string
+                          nullable: true
                     ContractsHistory:
                       type: object
                       properties:
@@ -3379,14 +3788,19 @@ components:
                               properties:
                                 Active:
                                   type: string
+                                  nullable: true
                                 Closed:
                                   type: string
+                                  nullable: true
                                 Refused:
                                   type: string
+                                  nullable: true
                                 Renounced:
                                   type: string
+                                  nullable: true
                                 Requested:
                                   type: string
+                                  nullable: true
                         Credit:
                           type: object
                           properties:
@@ -3395,14 +3809,19 @@ components:
                               properties:
                                 Active:
                                   type: string
+                                  nullable: true
                                 Closed:
                                   type: string
+                                  nullable: true
                                 Refused:
                                   type: string
+                                  nullable: true
                                 Renounced:
                                   type: string
+                                  nullable: true
                                 Requested:
                                   type: string
+                                  nullable: true
                         Guarantee:
                           type: object
                           properties:
@@ -3411,29 +3830,40 @@ components:
                               properties:
                                 Active:
                                   type: string
+                                  nullable: true
                                 Closed:
                                   type: string
+                                  nullable: true
                                 Refused:
                                   type: string
+                                  nullable: true
                                 Renounced:
                                   type: string
+                                  nullable: true
                                 Requested:
                                   type: string
+                                  nullable: true
                         AggregatedData:
                           type: object
                           properties:
                             Currency:
                               type: string
+                              nullable: true
                             CurrencyDesc:
                               type: string
+                              nullable: true
                             Contractsstring:
                               type: string
+                              nullable: true
                             TotalCreditLimit:
                               type: string
+                              nullable: true
                             TotalDebitBalance:
                               type: string
+                              nullable: true
                             ReportingProvidersstring:
                               type: string
+                              nullable: true
                         LetterOfCredit:
                           type: object
                           properties:
@@ -3442,14 +3872,19 @@ components:
                               properties:
                                 Active:
                                   type: string
+                                  nullable: true
                                 Closed:
                                   type: string
+                                  nullable: true
                                 Refused:
                                   type: string
+                                  nullable: true
                                 Renounced:
                                   type: string
+                                  nullable: true
                                 Requested:
                                   type: string
+                                  nullable: true
                         OtherFacilities:
                           type: object
                           properties:
@@ -3458,14 +3893,19 @@ components:
                               properties:
                                 Active:
                                   type: string
+                                  nullable: true
                                 Closed:
                                   type: string
+                                  nullable: true
                                 Refused:
                                   type: string
+                                  nullable: true
                                 Renounced:
                                   type: string
+                                  nullable: true
                                 Requested:
                                   type: string
+                                  nullable: true
                 EnquiredData:
                   type: object
                   properties:
@@ -3474,6 +3914,7 @@ components:
                       properties:
                         Role:
                           type: string
+                          nullable: true
                     Subject:
                       type: object
                       properties:
@@ -3488,35 +3929,46 @@ components:
                                   properties:
                                     City:
                                       type: string
+                                      nullable: true
                                     Address:
                                       type: string
+                                      nullable: true
                                     Country:
                                       type: string
+                                      nullable: true
                                     District:
                                       type: string
+                                      nullable: true
                                     PostalCode:
                                       type: string
+                                      nullable: true
                                     SubDistrict:
                                       type: string
+                                      nullable: true
                                 AddressDesc:
                                   type: object
                                   properties:
                                     CityDesc:
                                       type: string
+                                      nullable: true
                                     CountryDesc:
                                       type: string
+                                      nullable: true
                             Contact:
                               type: object
                               properties:
                                 Phonestring:
                                   type: string
+                                  nullable: true
                                 EmailAddress:
                                   type: string
+                                  nullable: true
                             CompanyName:
                               type: object
                               properties:
                                 TradeName:
                                   type: string
+                                  nullable: true
                             CompanyEstablishment:
                               type: string
                               nullable: true
@@ -3525,11 +3977,13 @@ components:
                               properties:
                                 BusinessIdentitystring:
                                   type: string
+                                  nullable: true
                     LinkDesc:
                       type: object
                       properties:
                         RoleDesc:
                           type: string
+                          nullable: true
                     Application:
                       type: object
                       properties:
@@ -3538,34 +3992,46 @@ components:
                           properties:
                             ApplicationAmount:
                               type: string
+                              nullable: true
                         Currency:
                           type: string
+                          nullable: true
                         ContractPhase:
                           type: string
+                          nullable: true
                         ContractTypeCode:
                           type: string
+                          nullable: true
                         ContractRequestDate:
                           type: string
+                          nullable: true
                     SubjectRefDate:
                       type: string
+                      nullable: true
                     ApplicationDesc:
                       type: object
                       properties:
                         CurrencyDesc:
                           type: string
+                          nullable: true
                         ContractTypeDesc:
                           type: string
+                          nullable: true
                         ContractPhaseDesc:
                           type: string
+                          nullable: true
                 ApplicationCodes:
                   type: object
                   properties:
                     CBContractCode:
                       type: string
+                      nullable: true
                     ProviderApplicationNo:
                       type: string
+                      nullable: true
 
     AFPIIndividual:
+      nullable: true
       type: object
       properties:
         count_npwp:
@@ -3714,6 +4180,7 @@ components:
           nullable: true
 
     CLIKIndividual:
+      nullable: true
       type: object
       properties:
         risk_level:
@@ -3721,18 +4188,22 @@ components:
           nullable: true
         exclusion_rule:
           type: string
+          nullable: true
         cb_subject_code:
           type: string
+          nullable: true
         collateral_type:
           type: string
           nullable: true
         cb_contract_code:
           type: string
+          nullable: true
         providercodedesc:
           type: string
           nullable: true
         subject_ref_date:
           type: string
+          nullable: true
         clik_credit_score:
           type: string
           nullable: true
@@ -3808,21 +4279,31 @@ components:
         pdf_url_report:
           type: string
           nullable: true
+        pdf_afpi_url_report:
+          type: string
+          nullable: true
 
     CLIKCompany:
+      nullable: true
       type: object
       properties:
         raw:
           $ref: '#/components/schemas/CLIKCompanyRawData'
         contacts:
-          type: string
+          type: array
           nullable: true
+          items:
+            $ref: '#/components/schemas/ContactData'
         addresses:
-          type: string
+          type: array
           nullable: true
+          items:
+            $ref: '#/components/schemas/AddressData'
         shareholders:
-          type: string
+          type: array
           nullable: true
+          items:
+            $ref: '#/components/schemas/ShareholderData'
         subject_code:
           type: string
           nullable: true
@@ -3830,8 +4311,10 @@ components:
           type: string
           nullable: true
         credit_history:
-          type: string
+          type: array
           nullable: true
+          items:
+            $ref: '#/components/schemas/CreditHistoryData'
         last_update_date:
           type: string
           nullable: true
@@ -3841,6 +4324,578 @@ components:
         provider_application_no:
           type: string
           nullable: true
+
+    ContactData:
+      type: object
+      properties:
+        Contacts:
+          $ref: '#/components/schemas/Contact'
+        FlagCurrent:
+          nullable: true
+          type: string
+        LastUpdateDate:
+          nullable: true
+          type: string
+
+    Contact:
+      nullable: true
+      type: object
+      properties:
+        PhoneNumber:
+          nullable: true
+          type: string
+        EmailAddress:
+          nullable: true
+          type: string
+        CellphoneNumber:
+          nullable: true
+          type: string
+      required:
+        - PhoneNumber
+
+    AddressData:
+      type: object
+      properties:
+        Address:
+          $ref: '#/components/schemas/AddressDetail'
+        AddressDesc:
+          $ref: '#/components/schemas/AddressDesc'
+        FlagCurrent:
+          nullable: true
+          type: string
+        LastUpdateDate:
+          nullable: true
+          type: string
+
+    AddressDetail:
+      nullable: true
+      type: object
+      properties:
+        City:
+          nullable: true
+          type: string
+        Address:
+          nullable: true
+          type: string
+        Country:
+          nullable: true
+          type: string
+        District:
+          nullable: true
+          type: string
+        PostalCode:
+          nullable: true
+          type: string
+        SubDistrict:
+          nullable: true
+          type: string
+
+    AddressDesc:
+      nullable: true
+      type: object
+      properties:
+        CityDesc:
+          nullable: true
+          type: string
+        CountryDesc:
+          nullable: true
+          type: string
+
+    ShareholderData:
+      nullable: true
+      type: object
+      properties:
+        Address:
+          $ref: '#/components/schemas/Address'
+        AddressDesc:
+          $ref: '#/components/schemas/AddressDesc'
+        Shareholder:
+          $ref: '#/components/schemas/Shareholder'
+        AttributeData:
+          $ref: '#/components/schemas/AttributeData'
+        ShareholderIDNumber:
+          $ref: '#/components/schemas/ShareholderIDNumber'
+
+    Shareholder:
+      nullable: true
+      type: object
+      properties:
+        Gender:
+          nullable: true
+          type: string
+          enum:
+            - MALE
+            - FEMALE
+        Position:
+          nullable: true
+          type: string
+        GenderDesc:
+          nullable: true
+          type: string
+        NoOfShares:
+          nullable: true
+          type: string
+        PositionDesc:
+          nullable: true
+          type: string
+        ManagerStatus:
+          nullable: true
+          type: string
+        ManagerStatusDesc:
+          nullable: true
+          type: string
+        NameOfShareholder:
+          nullable: true
+          type: string
+        legalEntity:
+          type: string
+        establishmentDate:
+          type: string
+
+    AttributeData:
+      nullable: true
+      type: object
+      properties:
+        ProviderCode:
+          nullable: true
+          type: string
+        ReferenceDate:
+          nullable: true
+          type: string
+        ProviderCodeDesc:
+          nullable: true
+          type: string
+        ProviderTypeCode:
+          nullable: true
+          type: string
+        ProviderTypeCodeDesc:
+          nullable: true
+          type: string
+
+    ShareholderIDNumber:
+      nullable: true
+      type: object
+      properties:
+        IdentificationCode:
+          $ref: '#/components/schemas/IdentificationCode'
+        IdentificationCodeDesc:
+          $ref: '#/components/schemas/IdentificationCodeDesc'
+
+    IdentificationCode:
+      nullable: true
+      type: object
+      properties:
+        IdentityType:
+          type: string
+          nullable: true
+        IdentityNumber:
+          nullable: true
+          type: string
+
+    IdentificationCodeDesc:
+      nullable: true
+      type: object
+      properties:
+        IdentityTypeDesc:
+          nullable: true
+          type: string
+
+    CreditHistoryData:
+      type: object
+      properties:
+        Maximum:
+          $ref: '#/components/schemas/Maximum'
+        CommonData:
+          $ref: '#/components/schemas/CommonData'
+        Guarantors:
+          $ref: '#/components/schemas/Guarantors'
+        Collaterals:
+          $ref: '#/components/schemas/Collaterals'
+        CreditProfile:
+          type: array
+          nullable: true
+          items:
+            $ref: '#/components/schemas/CreditProfile'
+        GrantedCredit:
+          $ref: '#/components/schemas/GrantedCredit'
+        JoinAccountNumber:
+          $ref: '#/components/schemas/SubjectSequenceMember'
+
+    Maximum:
+      nullable: true
+      type: object
+      properties:
+        MaxDaysPastDue:
+          nullable: true
+          type: string
+        WorstStatusCode:
+          nullable: true
+          type: string
+        WorstStatusDate:
+          nullable: true
+          type: string
+        WorstStatusDesc:
+          nullable: true
+          type: string
+        MaxOverduePaymentsAmount:
+          nullable: true
+          type: string
+        MaxOverduePaymentsNumber:
+          nullable: true
+          type: string
+
+    CommonData:
+      nullable: true
+      type: object
+      properties:
+        Role:
+          nullable: true
+          type: string
+        DueDate:
+          nullable: true
+          type: string
+        RoleDesc:
+          nullable: true
+          type: string
+        StartDate:
+          nullable: true
+          type: string
+        ReferenceNo:
+          nullable: true
+          type: string
+        CurrencyCode:
+          nullable: true
+          type: string
+        ProviderCode:
+          nullable: true
+          type: string
+        ContractPhase:
+          nullable: true
+          type: string
+        ReferenceDate:
+          nullable: true
+          type: string
+        CBContractCode:
+          nullable: true
+          type: string
+        ContractTypeCode:
+          nullable: true
+          type: string
+        CurrencyCodeDesc:
+          nullable: true
+          type: string
+        PastDueStausCode:
+          nullable: true
+          type: string
+        PastDueStausDesc:
+          nullable: true
+          type: string
+        ProviderCodeDesc:
+          nullable: true
+          type: string
+        ProviderTypeCode:
+          nullable: true
+          type: string
+        ContractPhaseDesc:
+          nullable: true
+          type: string
+        ContractStatusCode:
+          nullable: true
+          type: string
+        ContractStatusDesc:
+          nullable: true
+          type: string
+        ContractTypeCodeDesc:
+          nullable: true
+          type: string
+        ProviderTypeCodeDesc:
+          nullable: true
+          type: string
+
+    Guarantors:
+      nullable: true
+      type: object
+      properties:
+        GuarantorsSummary:
+          $ref: '#/components/schemas/GuarantorsCounter'
+
+    GuarantorsCounter:
+      nullable: true
+      type: object
+      properties:
+        GuarantorsCounter:
+          nullable: true
+          type: string
+
+    Collaterals:
+      nullable: true
+      type: object
+      properties:
+        AttributeData:
+          $ref: '#/components/schemas/AttributeDataList'
+        CollateralAddress:
+          $ref: '#/components/schemas/CollateralAddressList'
+        GrantedCollateral:
+          $ref: '#/components/schemas/GrantedCollateralList'
+
+    AttributeDataList:
+      nullable: true
+      type: object
+      properties:
+        ProviderCode:
+          nullable: true
+          type: string
+        ProviderCodeDesc:
+          nullable: true
+          type: string
+        ProviderTypeCode:
+          nullable: true
+          type: string
+        ProviderTypeCodeDesc:
+          nullable: true
+          type: string
+        ReferenceDate:
+          nullable: true
+          type: string
+
+    CollateralAddressList:
+      nullable: true
+      type: object
+      properties:
+        Address:
+          $ref: '#/components/schemas/AddressDetail'
+        AddressDesc:
+          $ref: '#/components/schemas/AddressDesc'
+
+    GrantedCollateralList:
+      nullable: true
+      type: object
+      properties:
+        Insured:
+          nullable: true
+          type: string
+        BindDate:
+          nullable: true
+          type: string
+        InsuredDesc:
+          nullable: true
+          type: string
+        BindTypeCode:
+          nullable: true
+          type: string
+        BindTypeDesc:
+          nullable: true
+          type: string
+        CollateralNumber:
+          nullable: true
+          type: string
+        ProofOfOwnership:
+          nullable: true
+          type: string
+        CollateralTypeCode:
+          nullable: true
+          type: string
+        CollateralTypeDesc:
+          nullable: true
+          type: string
+        CollateralOwnerName:
+          nullable: true
+          type: string
+        CollateralValueNJOP:
+          nullable: true
+          type: string
+        CollateralStatusCode:
+          nullable: true
+          type: string
+        CollateralStatusDesc:
+          nullable: true
+          type: string
+        CommonCollateralStatus:
+          nullable: true
+          type: string
+        CollateralValueReporter:
+          nullable: true
+          type: string
+        JointAccountCreditStatus:
+          nullable: true
+          type: string
+        CommonCollateralPercentage:
+          nullable: true
+          type: string
+        CommonCollateralStatusDesc:
+          nullable: true
+          type: string
+        JointAccountCreditStatusDesc:
+          nullable: true
+          type: string
+        CollateralAssessmentDateReporter:
+          nullable: true
+          type: string
+        CollateralValueIndependentAssessors:
+          nullable: true
+          type: string
+
+    CreditProfile:
+      nullable: true
+      type: object
+      properties:
+        Overdue:
+          nullable: true
+          type: string
+        DaysPastDue:
+          nullable: true
+          type: string
+        QualityCode:
+          nullable: true
+          type: string
+        DebitBalance:
+          nullable: true
+          type: string
+        ReferenceYear:
+          nullable: true
+          type: string
+        ReferenceMonth:
+          nullable: true
+          type: string
+        QualityCodeDesc:
+          nullable: true
+          type: string
+        ContractStatusCode:
+          nullable: true
+          type: string
+        ContractStatusDesc:
+          nullable: true
+          type: string
+        OverduePaymentsNumber:
+          nullable: true
+          type: string
+        CurrentMonthRealization:
+          nullable: true
+          type: string
+
+    GrantedCredit:
+      nullable: true
+      type: object
+      properties:
+        Penalty:
+          nullable: true
+          type: string
+        CityCode:
+          nullable: true
+          type: string
+        CreditLimit:
+          nullable: true
+          type: string
+        DaysPastDue:
+          nullable: true
+          type: string
+        CityCodeDesc:
+          nullable: true
+          type: string
+        DebitBalance:
+          nullable: true
+          type: string
+        InterestRate:
+          nullable: true
+          type: string
+        ProjectValue:
+          nullable: true
+          type: string
+        UsageTypeCode:
+          nullable: true
+          type: string
+        FinancigProgram:
+          nullable: true
+          type: string
+        FrequencyOfCredit:
+          nullable: true
+          type: string
+        StartDateOfCredit:
+          nullable: true
+          type: string
+        UsageTypeCodeDesc:
+          nullable: true
+          type: string
+        DebtorCategoryCode:
+          nullable: true
+          type: string
+        EconomicSectorCode:
+          nullable: true
+          type: string
+        FinalAgreementDate:
+          nullable: true
+          type: string
+        InitialCreditLimit:
+          nullable: true
+          type: string
+        TypeOfInterestRate:
+          nullable: true
+          type: string
+        CodeAgreementCredit:
+          nullable: true
+          type: string
+        FinancigProgramDesc:
+          nullable: true
+          type: string
+        FinalAgreementNumber:
+          nullable: true
+          type: string
+        UsageOrientationCode:
+          nullable: true
+          type: string
+        InterestOverdueAmount:
+          nullable: true
+          type: string
+        OriginalAgreementDate:
+          nullable: true
+          type: string
+        OverduePaymentsNumber:
+          nullable: true
+          type: string
+        DebtorCategoryCodeDesc:
+          nullable: true
+          type: string
+        EconomicSectorCodeDesc:
+          nullable: true
+          type: string
+        PrincipalOverdueAmount:
+          nullable: true
+          type: string
+        TypeOfInterestRateDesc:
+          nullable: true
+          type: string
+        CodeAgreementCreditDesc:
+          nullable: true
+          type: string
+        CurrentMonthRealization:
+          nullable: true
+          type: string
+        OriginalAgreementNumber:
+          nullable: true
+          type: string
+        ValueInOriginalCurrency:
+          nullable: true
+          type: string
+        CodeCharacteristicCredit:
+          nullable: true
+          type: string
+        FrequencyOfRestructuring:
+          nullable: true
+          type: string
+        UsageOrientationCodeDesc:
+          nullable: true
+          type: string
+        CodeCharacteristicCreditDesc:
+          nullable: true
+          type: string
+
+    SubjectSequenceMember:
+      nullable: true
+      type: object
+      properties:
+        SubjectSequenceMember:
+          nullable: true
+          type: string
 
     Error400Response:
       type: object
@@ -3854,11 +4909,13 @@ components:
             - API_VALIDATION_ERROR
             - CREDIT_CARD_DATA_ERROR
             - INVALID_JSON_FORMAT
-            - USER_NOT_FOUND
-            - USER_ID_NOT_FOUND
-            - LOAN_ID_NOT_FOUND
-            - NO_ACTIVE_USER_FOUND
-            - DOCUMENT_NOT_FOUND
+            - UNREGISTERED_PRODUCT_ERROR
+            - PRODUCT_NOT_ACTIVE
+            - NO_PAYMENT_CHANNEL_FOUND
+            - INVALID_USER_ID
+            - FILE_TYPE_UNSUPPORTED
+            - INVALID_DOCUMENT_ID
+            - BIOMETRIC_VERIFICATION_ERROR
         message:
           type: string
         errors:
@@ -3878,6 +4935,7 @@ components:
             - EXPIRED_SESSION
             - AUTHORIZATION_NOT_FOUND
             - KEY_NOT_VALID
+            - CREDIT_CARD_CHARGE_NOT_FOUND_ERROR
         message:
           type: string
         errors:
@@ -3906,7 +4964,13 @@ components:
           type: string
           enum:
             - PARTNER_NOT_FOUND
-            - CREDIT_CARD_CHARGE_NOT_FOUND_ERROR
+            - USER_NOT_FOUND
+            - USER_ID_NOT_FOUND
+            - LOAN_ID_NOT_FOUND
+            - UNIQUE_ID_NOT_FOUND
+            - NO_ACTIVE_USER_FOUND
+            - DOCUMENT_NOT_FOUND
+            - CREDIT_HISTORY_NOT_FOUND
         message:
           type: string
         errors:
@@ -3920,8 +4984,10 @@ components:
         error_code:
           type: string
           enum:
-            - DUPLICATE_EMAIL
+            - DUPLICATE_REFERENCE_ID
             - FILE_TOO_BIG
+            - DUPLICATE_EMAIL
+            - DUPLICATE_DATA
         message:
           type: string
     Error415Response:
@@ -4011,6 +5077,13 @@ components:
       schema:
         type: string
         example: '1234567890abcdef-1234567890abcdef-1234567890abcdef'
+    loanUniqueId:
+      in: path
+      name: loanUniqueId
+      required: true
+      schema:
+        type: string
+        example: '1234567890abcdef-1234567890abcdef-1234567890abcdef:123abcdef4578:1234567890abcdef-1234567890abcdef-1234567890abcdef'
     callbackTitle:
       in: path
       name: callbackTitle
@@ -4022,6 +5095,8 @@ components:
           - user-score
           - loan-status
           - bnpl-status
+          - credit-history-doc
+          - disbursement-creation
       required: true
     endpointKey:
       in: path
@@ -4039,6 +5114,160 @@ components:
         type: string
         minLength: 6
       required: true
+    search:
+      name: search
+      in: query
+      description: Status values that need to be considered for filter
+      required: false
+      explode: true
+      schema:
+        type: string
+    borrowerStatus:
+      name: status
+      in: query
+      description: Status values that need to be considered for filter
+      required: false
+      explode: true
+      schema:
+        type: string
+        enum:
+          - all
+    filter:
+      name: filter
+      in: query
+      description: Status values that need to be considered for filter
+      required: false
+      explode: true
+      schema:
+        type: string
+    pageNumber:
+      name: pageNumber
+      in: query
+      description: Status values that need to be considered for filter
+      required: false
+      explode: true
+      schema:
+        type: number
+        default: 0
+    pageSize:
+      name: pageSize
+      in: query
+      description: Status values that need to be considered for filter
+      required: false
+      explode: true
+      schema:
+        type: number
+        default: 10
+    createTransaction:
+      name: createTransaction
+      in: query
+      description: This for loan simulation, if this value is passed then loan creation will be processed otherwise it will run only simulation.
+      required: false
+      explode: true
+      schema:
+        type: string
+    entityPhone:
+      name: entityPhone
+      in: query
+      description: Company phone values that need to be considered for get by phone
+      required: false
+      explode: true
+      schema:
+        type: string
+    entityEmail:
+      name: entityEmail
+      in: query
+      description: Company email values that need to be considered for get by email
+      required: false
+      explode: true
+      schema:
+        type: string
+    phone:
+      name: phone
+      in: query
+      description: Phone values that need to be considered for get by phone
+      required: false
+      explode: true
+      schema:
+        type: string
+    email:
+      name: email
+      in: query
+      description: Email values that need to be considered for get by email
+      required: false
+      explode: true
+      schema:
+        type: string
+    nik:
+      name: nik
+      in: query
+      description: NIK values that need to be considered for get by NIK
+      required: false
+      explode: true
+      schema:
+        type: string
+    userIdQ:
+      in: query
+      name: userId
+      schema:
+        type: string
+    uniqueIdQ:
+      in: query
+      name: uniqueId
+      schema:
+        type: string
+        minLength: 6
+    startRangeAmountQ:
+      name: startRangeAmount
+      in: query
+      description: start range-amount values that need to be considered for get by range-amount
+      required: false
+      explode: true
+      schema:
+        type: string
+    endRangeAmountQ:
+      name: endRangeAmount
+      in: query
+      description: end range-amount values that need to be considered for get by range-amount
+      required: false
+      explode: true
+      schema:
+        type: string
+    startDateQ:
+      name: startDate
+      in: query
+      description: start-date values that need to be considered for get by start-date
+      required: false
+      explode: true
+      schema:
+        type: string
+    endDateQ:
+      name: endDate
+      in: query
+      description: end-date values that need to be considered for get by end-date
+      required: false
+      explode: true
+      schema:
+        type: string
+    loanId:
+      in: path
+      name: loanId
+      schema:
+        type: string
+        minLength: 6
+      required: true
+    identityNumber:
+      in: path
+      name: identityNumber
+      required: true
+      schema:
+        type: number
+    uniqueId:
+      in: path
+      name: uniqueId
+      required: true
+      schema:
+        type: string
 
   responses:
     Error400:
@@ -4105,6 +5334,10 @@ components:
               $ref: '#/components/schemas/Document'
 
   securitySchemes:
+    ApiKeyAuth: # arbitrary name for the security scheme
+      type: apiKey
+      in: header # can be "header", "query" or "cookie"
+      name: finfra-auth-key
     BearerAuth:
       type: http
       scheme: bearer
@@ -4112,3 +5345,4 @@ components:
     BasicAuth: # <-- arbitrary name for the security scheme
       type: http
       scheme: basic
+
